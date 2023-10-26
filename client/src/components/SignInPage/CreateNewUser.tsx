@@ -1,5 +1,3 @@
-import { Fragment } from "react";
-
 interface Props {
   onAdd: Function;
   closeAdd: Function;
@@ -8,6 +6,7 @@ interface Props {
 const CreateNewUser: React.FC<Props> = ({ onAdd, closeAdd }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    onAdd();
     closeAdd();
   };
 
