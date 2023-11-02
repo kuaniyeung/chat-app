@@ -15,7 +15,7 @@ const SignInPage: React.FC<Props> = ({onClick, showAdd}) => {
       <div className="divider"></div>
       <div className="grid card rounded-box place-items-center">
         <button
-          className="btn btn-primary w-full max-w-xs"
+          className="btn btn-secondary w-full max-w-xs"
           onClick={onClick}
         >
           Create New User
