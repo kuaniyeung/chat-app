@@ -3,57 +3,36 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import SignInPage from "./components/SignInPage/SignInPage";
 import CreateNewUser from "./components/SignInPage/CreateNewUser";
-import { supabase, signInWithEmail } from "./SupabasePlugin";
+import Dashboard from "./components/Dashboard/Dashboard";
+import { supabase } from "./SupabasePlugin";
 import { Session } from "@supabase/supabase-js";
-
-interface Chatrooms {
-  id: number;
-  created_at: string;
-}
+import { useAppSelector } from "./app/hooks";
 
 function App() {
   const [showAddUser, setAddUser] = useState(false);
+  const [session, setSession] = useState<Session | null>(null)
 
-  console.log("Change Enable Email's Comfirm Email settings back to enabled when project is finalized");
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
-  // -- Work with Supabase sessions+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-  // const [session, setSession] = useState<Session | null>(null);
+    return () => subscription.unsubscribe();
+  }, []);
 
-  // useEffect(() => {
-  //   supabase.auth.getSession().then(({ data: { session } }) => {
-  //     setSession(session);
-  //   });
+    console.log(
+      "Change Enable Email's Comfirm Email settings back to enabled when project is finalized"
+    );
 
-  //   const {
-  //     data: { subscription },
-  //   } = supabase.auth.onAuthStateChange((_event, session) => {
-  //     setSession(session);
-  //   });
-
-  //   return () => subscription.unsubscribe();
-  // }, []);
-
-  // if (!session) {
-  //   return (
-  //     <>
-  //       <SignInPage
-  //         onClick={() => setAddUser(!showAddUser)}
-  //         showAdd={showAddUser}
-  //       />
-  //       {showAddUser && (
-  //         <CreateNewUser
-  //           onAdd={() => console.log("this")}
-  //           closeAdd={() => setAddUser(!showAddUser)}
-  //         />
-  //       )}
-  //     </>
-  //   );
-  // } else {
-  //   return; // app content ;
-  // }
-
-  return (
+  return session ? (
+    <Dashboard />
+  ) : (
     <>
       <SignInPage
         onClick={() => setAddUser(!showAddUser)}

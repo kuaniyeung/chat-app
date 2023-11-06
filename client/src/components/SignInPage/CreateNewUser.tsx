@@ -5,7 +5,10 @@ import {
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { addUser } from "../../SupabasePlugin";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { createUser } from "../../features/user/userSlice";
+import LoadingSpinner from "../LoadingSpinner";
+import Dashboard from "../Dashboard/Dashboard";
 
 interface Props {
   closeAdd: Function;
@@ -16,6 +19,9 @@ const EMAIL_REGEX =
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector((state) => state.user.loading);
+
   const emailRef = useRef<HTMLInputElement | null>(null);
   const errRef = useRef<HTMLInputElement | null>(null);
 
@@ -62,7 +68,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
     }
 
     try {
-      await addUser(email, password);
+      await dispatch(createUser({ email, password }));
     } catch (error) {
       if (error instanceof Error && "message" in error) {
         setErrMsg(error.message);
@@ -80,15 +86,12 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
   return (
     <>
       {success ? (
-        <section>
-          <h1>Success!</h1>
-        </section>
+        <Dashboard />
       ) : (
         <div className="fixed top-0 left-0 right-0 w-full h-full bg-base-300">
           <p
             ref={errRef}
             className={errMsg ? "" : "invisible"}
-            aria-live="assertive"
           >
             {errMsg}
           </p>
@@ -113,7 +116,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
               <input
                 type="email"
                 ref={emailRef}
-                placeholder="example: youremail@gmail.com"
+                placeholder="example: youremail@mail.com"
                 onChange={(e) => setEmail(e.target.value)}
                 value={email}
                 autoComplete="off"
@@ -183,7 +186,9 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                 <span className="label-text">Confirm New Password</span>
                 <FontAwesomeIcon
                   icon={faCheck}
-                  className={validMatch && matchPassword? "text-success" : "hidden"}
+                  className={
+                    validMatch && matchPassword ? "text-success" : "hidden"
+                  }
                 />
                 <FontAwesomeIcon
                   icon={faTimes}
@@ -209,17 +214,31 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                     : "hidden"
                 }
               >
-                <FontAwesomeIcon icon={faInfoCircle} /> Must match the first password input field.
+                <FontAwesomeIcon icon={faInfoCircle} /> Must match the first
+                password input field.
               </p>
             </div>
+            {loading ? (
+              <button
+                type="submit"
+                className="btn btn-secondary form-control w-full max-w-xs my-3"
+                disabled={!validPassword || !validMatch ? true : false}
+              >
+                <LoadingSpinner colour={"neutral-content"} />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="btn btn-secondary form-control w-full max-w-xs my-3"
+                disabled={!validPassword || !validMatch ? true : false}
+              >
+                Create User
+              </button>
+            )}
             <button
-              type="submit"
-              className="btn btn-secondary form-control w-full max-w-xs my-3"
-              disabled={!validPassword || !validMatch ? true : false}
+              className="btn btn-outline form-control w-full max-w-xs"
+              onClick={(e) => closeAdd(e)}
             >
-              Create User
-            </button>
-            <button className="btn btn-outline form-control w-full max-w-xs" onClick={(e)=> closeAdd(e)}>
               Cancel
             </button>
           </form>
