@@ -16,6 +16,7 @@ interface Props {
 
 const EMAIL_REGEX =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const DISPLAY_NAME_REGEX = /^.{1,70}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
@@ -28,6 +29,10 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
   const [email, setEmail] = useState("");
   const [validEmail, setValidEmail] = useState(false);
   const [emailFocus, setEmailFocus] = useState(false);
+
+  const [displayName, setDisplayName] = useState("");
+  const [validDisplayName, setValidDisplayName] = useState(false);
+  const [displayNameFocus, setDisplayNameFocus] = useState(false);
 
   const [password, setPassword] = useState("");
   const [validPassword, setValidPassword] = useState(false);
@@ -49,6 +54,10 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
   }, [email]);
 
   useEffect(() => {
+    setValidDisplayName(DISPLAY_NAME_REGEX.test(displayName));
+  }, [displayName]);
+
+  useEffect(() => {
     setValidPassword(PWD_REGEX.test(password));
     setValidMatch(password === matchPassword);
   }, [password, matchPassword]);
@@ -60,15 +69,16 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const verification1 = PWD_REGEX.test(password);
-    const verification2 = EMAIL_REGEX.test(email);
-    if (!verification1 || !verification2) {
+    const verification1 = EMAIL_REGEX.test(email);
+    const verification2 = DISPLAY_NAME_REGEX.test(displayName);
+    const verification3 = PWD_REGEX.test(password);
+    if (!verification1 || !verification2 || !verification3) {
       setErrMsg("Invalid Entry");
       return;
     }
 
     try {
-      await dispatch(createUser({ email, password }));
+      await dispatch(createUser({ displayName, email, password }));
     } catch (error) {
       if (error instanceof Error && "message" in error) {
         setErrMsg(error.message);
@@ -79,6 +89,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
 
     setSuccess(true);
     setEmail("");
+    setDisplayName("");
     setPassword("");
     setMatchPassword("");
   };
@@ -89,10 +100,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
         <Dashboard />
       ) : (
         <div className="fixed top-0 left-0 right-0 w-full h-full bg-base-300">
-          <p
-            ref={errRef}
-            className={errMsg ? "" : "invisible"}
-          >
+          <p ref={errRef} className={errMsg ? "" : "invisible"}>
             {errMsg}
           </p>
           <form
@@ -101,6 +109,8 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
             className="place-items-center flex flex-col z-10 px-8 p-10"
             autoComplete="off"
           >
+            {/* Email Entry */}
+
             <div className="form-control w-full max-w-xs">
               <label htmlFor="email" className="label">
                 <span className="label-text">Email Address</span>
@@ -135,6 +145,47 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                 <FontAwesomeIcon icon={faInfoCircle} /> Must be a valid email.
               </p>
             </div>
+
+            {/* Display Name Entry */}
+
+            <div className="form-control w-full max-w-xs">
+              <label htmlFor="displayName" className="label">
+                <span className="label-text">Display Name</span>
+                <FontAwesomeIcon
+                  icon={faCheck}
+                  className={validDisplayName ? "text-success" : "hidden"}
+                />
+                <FontAwesomeIcon
+                  icon={faTimes}
+                  className={
+                    validDisplayName || !displayName ? "hidden" : "text-error"
+                  }
+                />
+              </label>
+              <input
+                type="text"
+                placeholder="Your display name"
+                onChange={(e) => setDisplayName(e.target.value)}
+                value={displayName}
+                autoComplete="off"
+                className="input input-bordered w-full max-w-xs"
+                required
+                onFocus={() => setDisplayNameFocus(true)}
+                onBlur={() => setDisplayNameFocus(false)}
+              />
+              <p
+                className={
+                  displayNameFocus && displayName && !validDisplayName
+                    ? "text-xs p-2 m-2 bg-warning rounded-lg"
+                    : "hidden"
+                }
+              >
+                <FontAwesomeIcon icon={faInfoCircle} /> Must be less than 70
+                characters.
+              </p>
+            </div>
+
+            {/* Password Entry */}
 
             <div className="form-control w-full max-w-xs">
               <label htmlFor="password" className="label">
@@ -180,6 +231,8 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                 <span aria-label="percent">%</span>
               </p>
             </div>
+
+            {/* Confirm Password Entry */}
 
             <div className="form-control w-full max-w-xs">
               <label htmlFor="confirm-password" className="label">

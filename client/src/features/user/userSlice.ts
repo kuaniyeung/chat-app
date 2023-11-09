@@ -5,6 +5,7 @@ import { Session } from "@supabase/supabase-js";
 
 type User = {
   id?: string;
+  display_name?: string;
   email?: string;
   created_at?: string;
 };
@@ -15,9 +16,13 @@ type InitialState = {
   error: string;
 };
 
-type CreateUserPayload = {
+interface SignInUserPayload {
   email: string;
   password: string;
+}
+
+interface CreateUserPayload extends SignInUserPayload {
+  displayName: string;
 };
 
 const initialState: InitialState = {
@@ -35,16 +40,40 @@ export const createUser = createAsyncThunk(
         password: payload.password,
       });
 
-      return data;
+      if (data.user) {
+        const user = data.user;
+
+        const { error: userError } = await supabase
+          .from("users")
+          .upsert([
+            {
+              id: user.id,
+              email: payload.email,
+              display_name: payload.displayName,
+            },
+          ])
+          .select();
+
+        if (userError) {
+          const customError = {
+            message: userError.details,
+          };
+
+          return rejectWithValue(customError);
+        }
+      }
+      const newData = { ...data, display_name: payload.displayName };
+
+      return newData;
     } catch (error) {
-      return rejectWithValue(error as Error); // Handle the error
+      return rejectWithValue(error as Error);
     }
   }
 );
 
 export const signInUser = createAsyncThunk(
   "user/signInUser",
-  async (payload: CreateUserPayload, { rejectWithValue }) => {
+  async (payload: SignInUserPayload, { rejectWithValue }) => {
     try {
       const { data } = await supabase.auth.signInWithPassword({
         email: payload.email,
@@ -53,7 +82,7 @@ export const signInUser = createAsyncThunk(
 
       return data;
     } catch (error) {
-      return rejectWithValue(error as Error); // Handle the error
+      return rejectWithValue(error as Error);
     }
   }
 );
@@ -70,10 +99,15 @@ export const userSlice = createSlice({
       createUser.fulfilled,
       (
         state,
-        action: PayloadAction<{ user: User | null; session: Session | null }>
+        action: PayloadAction<{
+          display_name: string;
+          user: User | null;
+          session: Session | null;
+        }>
       ) => {
         (state.loading = false),
           (state.user.id = action.payload.user?.id),
+          (state.user.display_name = action.payload.display_name),
           (state.user.email = action.payload.user?.email),
           (state.user.created_at = action.payload.user?.created_at);
         state.error = "";

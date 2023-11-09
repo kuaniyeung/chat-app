@@ -1,6 +1,8 @@
+import SideBar from "./SideBar"
+
 const Dashboard = () => {
   return (
-    <div>Dashboard</div>
+    <SideBar />
   )
 }
 
