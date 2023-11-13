@@ -27,27 +27,12 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  console.log(
-    "Change Enable Email's Comfirm Email settings back to enabled when project is finalized"
-  );
+  // console.log(
+  //   "Change Enable Email's Comfirm Email settings back to enabled when project is finalized"
+  // );
 
-  // TESTING SUPABASE
-  const test = async (id: string,name: string, email: string) => {
-    const { error } = await supabase
-      .from("users")
-      .upsert([
-        {
-          id: id,
-          display_name: name,
-          email,
-        },
-      ])
-      .select();
-    if (error) {
-      console.log(error);
-    }
-  };
-  // test("asd213","Name", "asd@asd.com");
+
+  console.log(session);
 
   return session ? (
     <Dashboard />

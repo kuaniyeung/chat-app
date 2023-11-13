@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { signInUser } from "../../features/user/userSlice";
 import LoadingSpinner from "../LoadingSpinner";
 import Dashboard from "../Dashboard/Dashboard";
+import WarningDialog from "../Dialogs/WarningDialog";
 
 const EMAIL_REGEX =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -18,7 +19,6 @@ const Login = ({}) => {
   const loading = useAppSelector((state) => state.user.loading);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
-  const errRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState("");
   const [validEmail, setValidEmail] = useState(false);
@@ -26,8 +26,10 @@ const Login = ({}) => {
 
   const [password, setPassword] = useState("");
 
-  const [errMsg, setErrMsg] = useState("");
+  const [errMsg, setErrMsg] = useState<string | undefined>("");
   const [success, setSuccess] = useState(false);
+  const [warningDialogIsOpen, setWarningDialogIsOpen] =
+    useState<boolean>(false);
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -51,13 +53,24 @@ const Login = ({}) => {
     }
 
     try {
-      await dispatch(signInUser({ email, password }));
-    } catch (error) {
-      if (error instanceof Error && "message" in error) {
-        setErrMsg(error.message);
-      } else {
-        console.error("An unknown error occurred.");
+      const action = await dispatch(signInUser({ email, password }));
+
+      // Check if the action is rejected
+      if (signInUser.rejected.match(action)) {
+        const error = action.payload as { message?: string };
+
+        if (error && "message" in error) {
+          setErrMsg(error.message);
+          setWarningDialogIsOpen(true);
+          setSuccess(false);
+          return;
+        } else {
+          console.error("An unknown error occurred.");
+          setErrMsg("An unknown error occurred.");
+        }
       }
+    } catch (error) {
+      console.error("An error occurred while dispatching signInUser:", error);
     }
 
     setSuccess(true);
@@ -70,13 +83,20 @@ const Login = ({}) => {
         <Dashboard />
       ) : (
         <div className="form-control w-full max-w-xs">
-          <p ref={errRef} className={errMsg ? "" : "invisible"}>
-            {errMsg}
-          </p>
+          <WarningDialog
+            isOpen={warningDialogIsOpen}
+            onConfirm={() => {
+              setWarningDialogIsOpen(false);
+              setEmail("");
+              setPassword("");
+            }}
+            text={errMsg}
+          />
           <form
             action="/submit-form"
             onSubmit={handleSubmit}
             autoComplete="off"
+            className="pt-10"
           >
             <div>
               <label htmlFor="email" className="label">

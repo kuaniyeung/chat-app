@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import type { PayloadAction, SerializedError } from "@reduxjs/toolkit";
 import { supabase } from "../../SupabasePlugin";
 import { Session } from "@supabase/supabase-js";
 
@@ -23,7 +23,7 @@ interface SignInUserPayload {
 
 interface CreateUserPayload extends SignInUserPayload {
   displayName: string;
-};
+}
 
 const initialState: InitialState = {
   loading: false,
@@ -35,37 +35,49 @@ export const createUser = createAsyncThunk(
   "user/createUser",
   async (payload: CreateUserPayload, { rejectWithValue }) => {
     try {
-      const { data } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: payload.email,
         password: payload.password,
+        options: {
+          data: {
+            display_name: payload.displayName,
+          },
+        },
       });
 
-      if (data.user) {
+      if (error) {
+        // Throw the error to trigger rejection
+        throw error;
+      }
+
+      if (data?.user) {
         const user = data.user;
 
         const { error: userError } = await supabase
           .from("users")
-          .upsert([
-            {
-              id: user.id,
-              email: payload.email,
-              display_name: payload.displayName,
-            },
-          ])
+          .upsert(
+            [
+              {
+                id: user.id,
+                email: payload.email,
+                display_name: payload.displayName,
+              },
+            ]
+          )
           .select();
 
         if (userError) {
-          const customError = {
-            message: userError.details,
-          };
-
-          return rejectWithValue(customError);
+          // Throw the userError to trigger rejection
+          throw userError;
         }
       }
+
+      // If execution reaches here, return the data
       const newData = { ...data, display_name: payload.displayName };
 
       return newData;
     } catch (error) {
+      // Use rejectWithValue with the thrown error
       return rejectWithValue(error as Error);
     }
   }
@@ -75,10 +87,15 @@ export const signInUser = createAsyncThunk(
   "user/signInUser",
   async (payload: SignInUserPayload, { rejectWithValue }) => {
     try {
-      const { data } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: payload.email,
         password: payload.password,
       });
+
+      if (error) {
+        // Throw the error to trigger rejection
+        throw error;
+      }
 
       return data;
     } catch (error) {
@@ -113,11 +130,33 @@ export const userSlice = createSlice({
         state.error = "";
       }
     );
-    builder.addCase(createUser.rejected, (state, action) => {
-      (state.loading = false),
-        (state.user = {}),
-        (state.error = action.error.message || "Something went wrong");
-    });
+    builder.addCase(
+      createUser.rejected,
+      (
+        state,
+        action: PayloadAction<
+          unknown,
+          string,
+          {
+            arg: CreateUserPayload;
+            requestId: string;
+            requestStatus: "rejected";
+            aborted: boolean;
+            condition: boolean;
+          } & (
+            | { rejectedWithValue: true }
+            | ({ rejectedWithValue: false } & {})
+          ),
+          SerializedError
+        >
+      ) => {
+        state.loading = false;
+        state.user = {};
+        state.error =
+          (action.payload as { message?: string })?.message ||
+          "Something went wrong";
+      }
+    );
     builder.addCase(signInUser.pending, (state) => {
       state.loading = true;
     });
@@ -137,11 +176,33 @@ export const userSlice = createSlice({
         state.error = "";
       }
     );
-    builder.addCase(signInUser.rejected, (state, action) => {
-      (state.loading = false),
-        (state.user = {}),
-        (state.error = action.error.message || "Something went wrong");
-    });
+    builder.addCase(
+      signInUser.rejected,
+      (
+        state,
+        action: PayloadAction<
+          unknown,
+          string,
+          {
+            arg: SignInUserPayload;
+            requestId: string;
+            requestStatus: "rejected";
+            aborted: boolean;
+            condition: boolean;
+          } & (
+            | { rejectedWithValue: true }
+            | ({ rejectedWithValue: false } & {})
+          ),
+          SerializedError
+        >
+      ) => {
+        state.loading = false;
+        state.user = {};
+        state.error =
+          (action.payload as { message?: string })?.message ||
+          "Something went wrong";
+      }
+    );
   },
 });
 

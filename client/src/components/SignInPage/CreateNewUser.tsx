@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { createUser } from "../../features/user/userSlice";
 import LoadingSpinner from "../LoadingSpinner";
 import Dashboard from "../Dashboard/Dashboard";
+import WarningDialog from "../Dialogs/WarningDialog";
 
 interface Props {
   closeAdd: Function;
@@ -24,7 +25,6 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
   const loading = useAppSelector((state) => state.user.loading);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
-  const errRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState("");
   const [validEmail, setValidEmail] = useState(false);
@@ -42,8 +42,10 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
   const [validMatch, setValidMatch] = useState(false);
   const [matchFocus, setMatchFocus] = useState(false);
 
-  const [errMsg, setErrMsg] = useState("");
+  const [errMsg, setErrMsg] = useState<string | undefined>("");
   const [success, setSuccess] = useState(false);
+  const [warningDialogIsOpen, setWarningDialogIsOpen] =
+    useState<boolean>(false);
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -78,20 +80,34 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
     }
 
     try {
-      await dispatch(createUser({ displayName, email, password }));
-    } catch (error) {
-      if (error instanceof Error && "message" in error) {
-        setErrMsg(error.message);
-      } else {
-        console.error("An unknown error occurred.");
-      }
-    }
+      // Dispatch the createUser action and wait for the promise to resolve or reject
+      const action = await dispatch(
+        createUser({ displayName, email, password })
+      );
 
-    setSuccess(true);
-    setEmail("");
-    setDisplayName("");
-    setPassword("");
-    setMatchPassword("");
+      // Check if the action is rejected
+      if (createUser.rejected.match(action)) {
+        const error = action.payload as { message?: string };
+
+        if (error && "message" in error) {
+          setErrMsg(error.message);
+          setWarningDialogIsOpen(true);
+          setSuccess(false);
+          return;
+        } else {
+          console.error("An unknown error occurred.");
+          setErrMsg("An unknown error occurred.");
+        }
+      } else {
+        setSuccess(true);
+        setEmail("");
+        setDisplayName("");
+        setPassword("");
+        setMatchPassword("");
+      }
+    } catch (error) {
+      console.error("An error occurred while dispatching createUser:", error);
+    }
   };
 
   return (
@@ -100,9 +116,17 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
         <Dashboard />
       ) : (
         <div className="fixed top-0 left-0 right-0 w-full h-full bg-base-300">
-          <p ref={errRef} className={errMsg ? "" : "invisible"}>
-            {errMsg}
-          </p>
+          <WarningDialog
+            isOpen={warningDialogIsOpen}
+            onConfirm={() => {
+              setWarningDialogIsOpen(false);
+              setEmail("");
+              setDisplayName("");
+              setPassword("");
+              setMatchPassword("");
+            }}
+            text={errMsg}
+          />
           <form
             action="/submit-form"
             onSubmit={handleSubmit}
