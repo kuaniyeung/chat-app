@@ -80,12 +80,10 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
     }
 
     try {
-      // Dispatch the createUser action and wait for the promise to resolve or reject
       const action = await dispatch(
         createUser({ displayName, email, password })
       );
 
-      // Check if the action is rejected
       if (createUser.rejected.match(action)) {
         const error = action.payload as { message?: string };
 
@@ -94,17 +92,18 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
           setWarningDialogIsOpen(true);
           setSuccess(false);
           return;
-        } else {
-          console.error("An unknown error occurred.");
-          setErrMsg("An unknown error occurred.");
         }
-      } else {
-        setSuccess(true);
-        setEmail("");
-        setDisplayName("");
-        setPassword("");
-        setMatchPassword("");
+        console.error("An unknown error occurred.");
+        setErrMsg("An unknown error occurred.");
       }
+
+      setSuccess(true);
+      setEmail("");
+      setDisplayName("");
+      setPassword("");
+      setMatchPassword("");
+      closeAdd();
+      
     } catch (error) {
       console.error("An error occurred while dispatching createUser:", error);
     }

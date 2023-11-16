@@ -3,10 +3,9 @@ import { MouseEvent } from "react";
 
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
-  showAdd: boolean
 }
 
-const SignInPage: React.FC<Props> = ({onClick, showAdd}) => {
+const SignInPage: React.FC<Props> = ({onClick}) => {
   return (
     <div className="flex flex-col w-full">
       <div className="grid card rounded-box place-items-center">

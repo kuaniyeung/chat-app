@@ -55,7 +55,6 @@ const Login = ({}) => {
     try {
       const action = await dispatch(signInUser({ email, password }));
 
-      // Check if the action is rejected
       if (signInUser.rejected.match(action)) {
         const error = action.payload as { message?: string };
 
@@ -64,10 +63,9 @@ const Login = ({}) => {
           setWarningDialogIsOpen(true);
           setSuccess(false);
           return;
-        } else {
-          console.error("An unknown error occurred.");
-          setErrMsg("An unknown error occurred.");
         }
+        console.error("An unknown error occurred.");
+        setErrMsg("An unknown error occurred.");
       }
     } catch (error) {
       console.error("An error occurred while dispatching signInUser:", error);
@@ -87,7 +85,6 @@ const Login = ({}) => {
             isOpen={warningDialogIsOpen}
             onConfirm={() => {
               setWarningDialogIsOpen(false);
-              setEmail("");
               setPassword("");
             }}
             text={errMsg}

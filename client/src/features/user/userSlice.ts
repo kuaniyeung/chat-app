@@ -3,7 +3,7 @@ import type { PayloadAction, SerializedError } from "@reduxjs/toolkit";
 import { supabase } from "../../SupabasePlugin";
 import { Session } from "@supabase/supabase-js";
 
-type User = {
+export type User = {
   id?: string;
   display_name?: string;
   email?: string;
@@ -45,31 +45,23 @@ export const createUser = createAsyncThunk(
         },
       });
 
-      if (error) {
-        // Throw the error to trigger rejection
-        throw error;
-      }
+      if (error) throw error;
 
       if (data?.user) {
         const user = data.user;
 
         const { error: userError } = await supabase
           .from("users")
-          .upsert(
-            [
-              {
-                id: user.id,
-                email: payload.email,
-                display_name: payload.displayName,
-              },
-            ]
-          )
+          .upsert([
+            {
+              id: user.id,
+              email: payload.email,
+              display_name: payload.displayName,
+            },
+          ])
           .select();
 
-        if (userError) {
-          // Throw the userError to trigger rejection
-          throw userError;
-        }
+        if (userError) throw userError;
       }
 
       // If execution reaches here, return the data
@@ -77,7 +69,6 @@ export const createUser = createAsyncThunk(
 
       return newData;
     } catch (error) {
-      // Use rejectWithValue with the thrown error
       return rejectWithValue(error as Error);
     }
   }
@@ -92,10 +83,7 @@ export const signInUser = createAsyncThunk(
         password: payload.password,
       });
 
-      if (error) {
-        // Throw the error to trigger rejection
-        throw error;
-      }
+      if (error) throw error;
 
       return data;
     } catch (error) {
@@ -104,10 +92,26 @@ export const signInUser = createAsyncThunk(
   }
 );
 
+export const signOutUser = createAsyncThunk("user/signOutUser", async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) throw error;
+  } catch (error) {
+    return error;
+  }
+});
+
 export const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    retrieveUserData: (state, action: PayloadAction<User>) => {
+      (state.loading = false),
+        (state.user = action.payload),
+        (state.error = "");
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(createUser.pending, (state) => {
       state.loading = true;
@@ -203,7 +207,20 @@ export const userSlice = createSlice({
           "Something went wrong";
       }
     );
+    builder.addCase(signOutUser.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(signOutUser.fulfilled, (state) => {
+      state.loading = false;
+      state.user = {};
+      state.error = "";
+    });
+    builder.addCase(signOutUser.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message || "Something went wrong"
+    })
   },
 });
 
 export default userSlice.reducer;
+export const { retrieveUserData } = userSlice.actions;
