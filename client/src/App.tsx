@@ -15,41 +15,53 @@ import LoadingSpinner from "./components/LoadingSpinner";
 
 function App() {
   const [showAddUser, setAddUser] = useState(false);
+  const [currentEventOnState, setCurrentEventOnState] = useState<string | null>(
+    null
+  );
   const user = useAppSelector((state) => state.user.user);
   const session = useAppSelector((state) => state.session.session);
-  const sessionLoading = useAppSelector((state) => state.session.loading);
   const dispatch = useAppDispatch();
-  const mapSessionUserToUser = (sessionUser: any): User => {
-    return {
-      id: sessionUser.id,
-      display_name: sessionUser.user_metadata?.display_name,
-      email: sessionUser.email,
-      created_at: sessionUser.created_at,
-    };
+
+  const getUserData = () => {
+    if (Object.keys(user).length === 0 && session) {
+      const mapSessionUserToUser = (sessionUser: any): User => {
+        return {
+          id: sessionUser.id,
+          display_name: sessionUser.user_metadata?.display_name,
+          email: sessionUser.email,
+          created_at: sessionUser.created_at,
+        };
+      };
+
+      const mappedUser = mapSessionUserToUser(session.user);
+      dispatch(retrieveUserData(mappedUser));
+    }
+  };
+
+  const fetchSession = async () => {
+    try {
+      await dispatch(getSession()).unwrap();
+    } catch (error) {
+      console.error("An error occurred while dispatching getSession:", error);
+    }
   };
 
   useEffect(() => {
-    async () => {
-      try {
-        const action = await dispatch(getSession());
-
-        if (getSession.rejected.match(action)) {
-          const error = action.payload as { message?: string };
-
-          if (error && "message" in error) {
-            console.error(error.message);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error("An error occurred while dispatching getSession:", error);
-      }
-    };
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      dispatch(retrieveSessionData(session));
+    } = supabase.auth.onAuthStateChange((event, sessionOnState) => {
+      setCurrentEventOnState(event);
+
+      if (event === "INITIAL_SESSION" && !sessionOnState) {
+        fetchSession();
+        getUserData();
+      }
+
+      if (
+        (event === "INITIAL_SESSION" && sessionOnState) ||
+        event === "SIGNED_IN"
+      )
+        dispatch(retrieveSessionData(sessionOnState));
     });
 
     return () => subscription.unsubscribe();
@@ -57,55 +69,30 @@ function App() {
 
   useEffect(() => {
     getUserData();
-  }, [user, session]);
-
-  const getUserData = () => {
-    if (Object.keys(user).length === 0 && session) {
-      const mappedUser = mapSessionUserToUser(session.user);
-      dispatch(retrieveUserData(mappedUser));
-    }
-  };
+  }, [session]);
 
   console.log(
     "Change Enable Email's Comfirm Email settings back to enabled when project is finalized"
   );
 
-  console.log(session);
-  console.log(user);
+  // --- RENDER THE COMPONENT --- //
 
-  // return  Object.keys(user).length > 0 ? (
-  //   sessionLoading ? (
-  //     <LoadingSpinner colour={"neutral-content"} />
-  //   ) : (
-  //     <Dashboard />
-  //   )
-  // ) : (
-  //   <>
-  //     <SignInPage
-  //       onClick={() => setAddUser(!showAddUser)}
-  //     />
-  //     {showAddUser && (
-  //       <CreateNewUser closeAdd={() => setAddUser(!showAddUser)} />
-  //     )}
-  //   </>
-  // );
+  // Show loading spinner if currentEventOnState is null
+  if (currentEventOnState === null) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <LoadingSpinner colour={"neutral-content"} />
+      </div>
+    );
+  }
 
-  // return sessionLoading ? (
-  //   <LoadingSpinner colour={"neutral-content"} />
-  // ) : Object.keys(user).length > 0 ? (
-  //   <Dashboard />
-  // ) : (
-  //   <>
-  //     <SignInPage onClick={() => setAddUser(!showAddUser)} />
-  //     {showAddUser && (
-  //       <CreateNewUser closeAdd={() => setAddUser(!showAddUser)} />
-  //     )}
-  //   </>
-  // );
+  // Show content if user data is available
+  if (Object.keys(user).length) {
+    return <Dashboard />;
+  }
 
-  return Object.keys(user).length > 0 ? (
-    <Dashboard />
-  ) : (
+  // Otherwise show SignInPage and CreateNewUser components
+  return (
     <>
       <SignInPage onClick={() => setAddUser(!showAddUser)} />
       {showAddUser && (

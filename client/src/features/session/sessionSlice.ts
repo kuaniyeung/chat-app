@@ -45,14 +45,11 @@ export const sessionSlice = createSlice({
     builder.addCase(getSession.pending, (state) => {
       state.loading = true;
     });
-    builder.addCase(
-      getSession.fulfilled,
-      (state, action) => {
+    builder.addCase(getSession.fulfilled, (state, action) => {
       (state.loading = false),
         (state.session = action.payload as Session | null),
         (state.error = "");
-      }
-    );
+    });
     builder.addCase(getSession.rejected, (state, action) => {
       (state.loading = false),
         (state.session = null),

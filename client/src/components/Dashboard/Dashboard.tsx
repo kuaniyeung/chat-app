@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import SideBar from "./SideBar";
+import SideBar from "./SideBar/SideBar";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import ConfirmationDialog from "../Dialogs/ConfirmationDialog";
