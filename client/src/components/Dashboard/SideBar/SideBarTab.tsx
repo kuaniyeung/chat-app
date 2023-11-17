@@ -8,11 +8,12 @@ const SideBarTab = () => {
     (state) => state.chatroom.isSelected
   );
   const isContactSelected = useAppSelector((state) => state.contact.isSelected);
+  const classes = "tab w-2/4 transition-all duration-300 ease-in-out transform";
 
   return (
     <div className="tabs tabs-boxed fixed w-full z-10 bottom-0">
       <a
-        className={isChatroomSelected ? `tab w-2/4 tab-active` : `tab w-2/4`}
+        className={isChatroomSelected ? `${classes} tab-active` : `${classes}`}
         onClick={() => {
           dispatch(setChatroomActive(true));
           dispatch(setContactActive(false));
@@ -21,7 +22,7 @@ const SideBarTab = () => {
         Chatrooms
       </a>
       <a
-        className={isContactSelected ? `tab w-2/4 tab-active` : `tab w-2/4`}
+        className={isContactSelected ? `${classes} tab-active` : `${classes}`}
         onClick={() => {
           dispatch(setContactActive(true));
           dispatch(setChatroomActive(false));
