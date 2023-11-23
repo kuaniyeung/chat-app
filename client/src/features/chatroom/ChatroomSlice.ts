@@ -25,11 +25,11 @@ export const chatroomSlice = createSlice({
   name: "chatroom",
   initialState,
   reducers: {
-    setChatroomActive: (state, action) => {
+    setChatroomTabSelected: (state, action) => {
       state.isSelected = action.payload;
     },
   },
 });
 
 export default chatroomSlice.reducer;
-export const { setChatroomActive } = chatroomSlice.actions;
+export const { setChatroomTabSelected } = chatroomSlice.actions;

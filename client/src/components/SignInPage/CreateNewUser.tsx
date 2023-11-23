@@ -103,7 +103,6 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
       setPassword("");
       setMatchPassword("");
       closeAdd();
-      
     } catch (error) {
       console.error("An error occurred while dispatching createUser:", error);
     }

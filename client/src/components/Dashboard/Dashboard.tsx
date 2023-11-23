@@ -2,15 +2,28 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import SideBar from "./SideBar/SideBar";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ConfirmationDialog from "../Dialogs/ConfirmationDialog";
 import { signOutUser } from "../../features/user/userSlice";
+import { getContacts } from "../../features/contact/ContactSlice";
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
   const displayName = useAppSelector((state) => state.user.user.display_name);
   const [confirmationDialogIsOpen, setConfirmationDialogIsOpen] =
     useState(false);
+
+  const fetchContacts = async () => {
+    try {
+      await dispatch(getContacts()).unwrap();
+    } catch (error) {
+      console.error("An error occurred while dispatching getContacts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, [displayName]);
 
   const handleConfirmLogOut = async () => {
     try {

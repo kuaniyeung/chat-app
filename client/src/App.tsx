@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SignInPage from "./components/SignInPage/SignInPage";
 import CreateNewUser from "./components/SignInPage/CreateNewUser";
 import Dashboard from "./components/Dashboard/Dashboard";
@@ -18,11 +18,12 @@ function App() {
   const [currentEventOnState, setCurrentEventOnState] = useState<string | null>(
     null
   );
-  const user = useAppSelector((state) => state.user.user);
   const session = useAppSelector((state) => state.session.session);
+  const user = useAppSelector((state) => state.user.user);
+  const contacts = useAppSelector((state) => state.contact.contacts);
   const dispatch = useAppDispatch();
 
-  const getUserData = () => {
+  const setUserData = () => {
     if (Object.keys(user).length === 0 && session) {
       const mapSessionUserToUser = (sessionUser: any): User => {
         return {
@@ -46,16 +47,17 @@ function App() {
     }
   };
 
+  const toggleAddUser = () => {
+    setAddUser((prev) => !prev);
+  };
+
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, sessionOnState) => {
       setCurrentEventOnState(event);
 
-      if (event === "INITIAL_SESSION" && !sessionOnState) {
-        fetchSession();
-        getUserData();
-      }
+      if (event === "INITIAL_SESSION" && !sessionOnState) fetchSession();
 
       if (
         (event === "INITIAL_SESSION" && sessionOnState) ||
@@ -68,12 +70,41 @@ function App() {
   }, []);
 
   useEffect(() => {
-    getUserData();
-  }, [session]);
+    setUserData();
+  }, [session?.access_token]);
 
-  console.log(
-    "Change Enable Email's Comfirm Email settings back to enabled when project is finalized"
-  );
+  // console.log(
+  //   "Change Enable Email's Comfirm Email settings back to enabled when project is finalized"
+  // );
+
+  // ------ TESTING ------ //
+
+  // const testEmail = "test@test.com";
+  // const verifiedContact = {
+  //   user_id: 6,
+  //   user_email: "test6@email.com",
+  //   display_name: "Tester6",
+  // };
+
+  const getDisplayNames = async () => {
+    try {
+      const { data: existingDisplayNames, error } = await supabase
+        .from("users")
+        .select("display_name");
+
+      if (error) throw error;
+
+            const displayNameExists = existingDisplayNames.some(
+              (user) => user.display_name === "Tester1"
+            );
+
+            console.log(displayNameExists);
+    } catch (error) {
+      console.error("An error occurred while dispatching getSession:", error);
+    }
+  };
+
+  // getDisplayNames();
 
   // --- RENDER THE COMPONENT --- //
 
@@ -94,10 +125,8 @@ function App() {
   // Otherwise show SignInPage and CreateNewUser components
   return (
     <>
-      <SignInPage onClick={() => setAddUser(!showAddUser)} />
-      {showAddUser && (
-        <CreateNewUser closeAdd={() => setAddUser(!showAddUser)} />
-      )}
+      <SignInPage onClick={toggleAddUser} />
+      {showAddUser && <CreateNewUser closeAdd={toggleAddUser} />}
     </>
   );
 }

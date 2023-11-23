@@ -2,6 +2,9 @@ import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SideBarTab from "./SideBarTab";
 import { useAppSelector } from "../../../app/hooks";
+import { useState } from "react";
+import AddNewChatroomDialog from "./StartNewChatroomDialog";
+import AddNewContactDialog from "./AddNewContactDialog";
 
 const SideBar = () => {
   const isChatroomSelected = useAppSelector(
@@ -9,10 +12,28 @@ const SideBar = () => {
   );
   const isContactSelected = useAppSelector((state) => state.contact.isSelected);
 
+  const [showAddChatroom, setShowAddChatroom] = useState(false);
+  const [showAddContact, setShowAddContact] = useState(false);
+
   return (
     <>
-      {isChatroomSelected && <ChatroomsTab />}
-      {isContactSelected && <ContactsTab />}
+      {isChatroomSelected && (
+        <ChatroomsTab onClick={() => setShowAddChatroom(!showAddChatroom)} />
+      )}
+      {showAddChatroom && (
+        <AddNewChatroomDialog
+          // closeAdd={() => setShowAddChatroom(!showAddChatroom)}
+        />
+      )}
+      {isContactSelected && (
+        <ContactsTab onClick={() => setShowAddContact(!showAddContact)} />
+      )}
+      
+      <AddNewContactDialog
+        isOpen={showAddContact}
+        closeAdd={() => setShowAddContact(!showAddContact)}
+      />
+      
       <SideBarTab />
     </>
   );

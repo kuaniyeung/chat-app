@@ -34,6 +34,27 @@ const initialState: InitialState = {
 export const createUser = createAsyncThunk(
   "user/createUser",
   async (payload: CreateUserPayload, { rejectWithValue }) => {
+    // Check if display_name already exists in Database
+    try {
+      const { data: existingDisplayNames, error } = await supabase
+        .from("users")
+        .select("display_name");
+
+      if (error) throw error;
+
+      const displayNameExists = existingDisplayNames.some(
+        (user) => user.display_name === payload.displayName
+      );
+
+      if (displayNameExists)
+        throw new Error(
+          "Display name already taken. \nPlease choose a different user name."
+        );
+    } catch (error) {
+      return rejectWithValue(error as Error);
+    }
+
+    // Adding new user to Auth
     try {
       const { data, error } = await supabase.auth.signUp({
         email: payload.email,
@@ -50,6 +71,7 @@ export const createUser = createAsyncThunk(
       if (data?.user) {
         const user = data.user;
 
+        // Adding new user to "users" table
         const { error: userError } = await supabase
           .from("users")
           .upsert([
@@ -217,8 +239,8 @@ export const userSlice = createSlice({
     });
     builder.addCase(signOutUser.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong"
-    })
+      state.error = action.error.message || "Something went wrong";
+    });
   },
 });
 
