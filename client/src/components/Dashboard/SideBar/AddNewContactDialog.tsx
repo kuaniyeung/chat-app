@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { addNewContact } from "../../../features/contact/ContactSlice";
 import WarningDialog from "../../Dialogs/WarningDialog";
-import Dashboard from "../Dashboard";
 import LoadingSpinner from "../../LoadingSpinner";
 
 interface Props {
@@ -12,42 +11,29 @@ interface Props {
   closeAdd: Function;
 }
 
-const EMAIL_REGEX =
-  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.contact.loading);
 
-  const emailRef = useRef<HTMLInputElement | null>(null);
+  const displayNameRef = useRef<HTMLInputElement | null>(null);
 
-  const [email, setEmail] = useState("");
-  const [validEmail, setValidEmail] = useState(false);
-  const [emailFocus, setEmailFocus] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [displayNameFocus, setDisplayNameFocus] = useState(false);
 
   const [errMsg, setErrMsg] = useState<string | undefined>("");
   const [warningDialogIsOpen, setWarningDialogIsOpen] =
     useState<boolean>(false);
 
   useEffect(() => {
-    emailRef.current?.focus();
+    displayNameRef.current?.focus();
   }, []);
-
-  useEffect(() => {
-    setValidEmail(EMAIL_REGEX.test(email));
-    setErrMsg("");
-  }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const verification1 = EMAIL_REGEX.test(email);
-    if (!verification1) {
-      setErrMsg("Invalid Entry");
-      return;
-    }
     try {
-      const action = await dispatch(addNewContact({ email }));
+      const action = await dispatch(addNewContact({ displayName }));
 
       if (addNewContact.rejected.match(action)) {
         const error = action.payload as { message?: string };
@@ -64,6 +50,7 @@ const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
       console.error("An error occurred while dispatching signInUser:", error);
     }
 
+    setDisplayName("")
     closeAdd();
   };
 
@@ -78,7 +65,7 @@ const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
             isOpen={warningDialogIsOpen}
             onConfirm={() => {
               setWarningDialogIsOpen(false);
-              setEmail('')
+              setDisplayName("");
             }}
             text={errMsg}
           />
@@ -88,30 +75,21 @@ const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
             autoComplete="off"
           >
             <div>
-              <label htmlFor="email" className="label">
-                <span className="label-text">Contact Email</span>
+              <label htmlFor="display_name" className="label">
+                <span className="label-text">Contact Display Name</span>
               </label>
               <input
-                type="email"
-                ref={emailRef}
-                placeholder="Email"
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
+                type="text"
+                ref={displayNameRef}
+                placeholder="Enter Display Name"
+                onChange={(e) => setDisplayName(e.target.value)}
+                value={displayName}
                 autoComplete="off"
                 className="input input-bordered w-full max-w-xs"
                 required
-                onFocus={() => setEmailFocus(true)}
-                onBlur={() => setEmailFocus(false)}
+                onFocus={() => setDisplayNameFocus(true)}
+                onBlur={() => setDisplayNameFocus(false)}
               />
-              <p
-                className={
-                  emailFocus && email && !validEmail
-                    ? "text-xs p-2 m-2 bg-warning rounded-lg"
-                    : "hidden"
-                }
-              >
-                <FontAwesomeIcon icon={faInfoCircle} /> Must be a valid email.
-              </p>
             </div>
 
             {loading ? (

@@ -17,7 +17,7 @@ interface Props {
 
 const EMAIL_REGEX =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const DISPLAY_NAME_REGEX = /^.{1,70}$/;
+const DISPLAY_NAME_REGEX = /^.{3,70}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
@@ -202,7 +202,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                     : "hidden"
                 }
               >
-                <FontAwesomeIcon icon={faInfoCircle} /> Must be less than 70
+                <FontAwesomeIcon icon={faInfoCircle} /> Must be over 2 and less than 70
                 characters.
               </p>
             </div>

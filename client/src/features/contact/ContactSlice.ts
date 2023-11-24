@@ -16,7 +16,7 @@ type InitialState = {
 };
 
 interface AddNewContactPayload {
-  email: string;
+  displayName: string;
 }
 
 const initialState: InitialState = {
@@ -40,7 +40,7 @@ export const getContacts = createAsyncThunk(
 
       if (error) throw error;
       
-      const contactsArray = contacts[0]?.contacts || []; // Add a check here
+      const contactsArray = contacts[0]?.contacts || [];
 
       return contactsArray as Contact[];
       
@@ -57,16 +57,18 @@ export const addNewContact = createAsyncThunk(
     const currentState: RootState = getState() as RootState;
     const currentUser = currentState.user.user;
 
+    // Validate new contact: does it exist?
+
     try {
       const { data: verifiedUser, error } = await supabase
         .from("users")
         .select("id, email, display_name")
-        .eq("email", payload.email);
+        .eq("display_name", payload.displayName);
 
       if (error) throw error;
       if (!verifiedUser.length)
         throw new Error(
-          "User does not exist, cannot add as contact. \nPlease make sure the email address is entered correctly."
+          "User does not exist, cannot add as contact. \nPlease make sure you have the correct display name."
         );
 
       if (verifiedUser.length === 1) {
@@ -75,6 +77,29 @@ export const addNewContact = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error as Error);
     }
+
+    // Validate new contact: has it been added already?
+
+        try {
+          const { data: verifiedUser, error } = await supabase
+            .from("users")
+            .select("contacts")
+            .eq("email", currentUser.email);
+
+          if (error) throw error;
+          if (!verifiedUser.length)
+            throw new Error(
+              "Contact already exists in contact list."
+            );
+
+          if (verifiedUser.length === 1) {
+            verifiedContact = verifiedUser[0];
+          }
+        } catch (error) {
+          return rejectWithValue(error as Error);
+        }
+
+    // Add new contact to user
 
     try {
       const { data: updatedData, error } = await supabase.rpc("add_contact", {

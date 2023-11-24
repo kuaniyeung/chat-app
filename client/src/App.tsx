@@ -79,32 +79,38 @@ function App() {
 
   // ------ TESTING ------ //
 
-  // const testEmail = "test@test.com";
-  // const verifiedContact = {
-  //   user_id: 6,
-  //   user_email: "test6@email.com",
-  //   display_name: "Tester6",
-  // };
+  const testEmail = "test@test.com";
+  const verifiedContact = {
+    user_id: 6,
+    user_email: "test6@email.com",
+    display_name: "Tester1",
+  };
 
-  const getDisplayNames = async () => {
+  const testing = async () => {
     try {
-      const { data: existingDisplayNames, error } = await supabase
+      const { data: existingContacts, error } = await supabase
         .from("users")
-        .select("display_name");
+        .select("contacts")
+        .eq("email", testEmail);
 
       if (error) throw error;
 
-            const displayNameExists = existingDisplayNames.some(
-              (user) => user.display_name === "Tester1"
-            );
+      console.log(existingContacts);
 
-            console.log(displayNameExists);
+      const contactExists = existingContacts.some(
+        (user) => user.contacts.display_name === verifiedContact.display_name
+      );
+
+      if (contactExists)
+        throw new Error("Contact already exists in contact list.");
+
+      console.log("good");
     } catch (error) {
-      console.error("An error occurred while dispatching getSession:", error);
+      console.error(error);
     }
   };
 
-  // getDisplayNames();
+  // testing();
 
   // --- RENDER THE COMPONENT --- //
 
