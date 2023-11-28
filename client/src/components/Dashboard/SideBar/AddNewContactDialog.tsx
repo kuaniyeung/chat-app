@@ -1,5 +1,3 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { addNewContact } from "../../../features/contact/ContactSlice";
@@ -7,20 +5,21 @@ import WarningDialog from "../../Dialogs/WarningDialog";
 import LoadingSpinner from "../../LoadingSpinner";
 
 interface Props {
-  isOpen: boolean;
+  isAddContactOpen: boolean;
   closeAdd: Function;
 }
 
 
-const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
+const AddNewContactDialog: React.FC<Props> = ({
+  isAddContactOpen,
+  closeAdd,
+}) => {
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.contact.loading);
 
   const displayNameRef = useRef<HTMLInputElement | null>(null);
 
   const [displayName, setDisplayName] = useState("");
-  const [displayNameFocus, setDisplayNameFocus] = useState(false);
-
   const [errMsg, setErrMsg] = useState<string | undefined>("");
   const [warningDialogIsOpen, setWarningDialogIsOpen] =
     useState<boolean>(false);
@@ -50,7 +49,7 @@ const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
       console.error("An error occurred while dispatching signInUser:", error);
     }
 
-    setDisplayName("")
+    setDisplayName("");
     closeAdd();
   };
 
@@ -58,7 +57,9 @@ const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
     <>
       <dialog
         id="my_modal_5"
-        className={`modal sm:modal-middle ${isOpen ? "modal-open" : ""}`}
+        className={`modal sm:modal-middle ${
+          isAddContactOpen ? "modal-open" : ""
+        }`}
       >
         <div className="modal-box form-control w-full max-w-xs">
           <WarningDialog
@@ -81,14 +82,12 @@ const AddNewContactDialog: React.FC<Props> = ({ isOpen, closeAdd }) => {
               <input
                 type="text"
                 ref={displayNameRef}
-                placeholder="Enter Display Name"
+                placeholder="Enter registered display name"
                 onChange={(e) => setDisplayName(e.target.value)}
                 value={displayName}
                 autoComplete="off"
                 className="input input-bordered w-full max-w-xs"
                 required
-                onFocus={() => setDisplayNameFocus(true)}
-                onBlur={() => setDisplayNameFocus(false)}
               />
             </div>
 

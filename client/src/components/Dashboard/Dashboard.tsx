@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import ConfirmationDialog from "../Dialogs/ConfirmationDialog";
 import { signOutUser } from "../../features/user/userSlice";
 import { getContacts } from "../../features/contact/ContactSlice";
+import { getChatrooms } from "../../features/chatroom/ChatroomSlice";
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
@@ -21,8 +22,17 @@ const Dashboard = () => {
     }
   };
 
+  const fetchChatrooms = async () => {
+    try {
+      await dispatch(getChatrooms()).unwrap();
+    } catch (error) {
+      console.error("An error occurred while dispatching getContacts:", error);
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
+    fetchChatrooms();
   }, [displayName]);
 
   const handleConfirmLogOut = async () => {

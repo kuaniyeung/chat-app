@@ -1,12 +1,11 @@
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { MouseEvent, useEffect } from "react";
+import { useAppSelector } from "../../../app/hooks";
+import { MouseEvent } from "react";
 
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 const ContactsTab: React.FC<Props> = ({ onClick }) => {
-  const dispatch = useAppDispatch();
   const contacts = useAppSelector((state) => state.contact.contacts);
 
   return (
@@ -14,14 +13,15 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
       <h1>Your Contacts</h1>
 
       {/* If no contacts added: */}
-      {!contacts && <h1>No Saved Contacts</h1>}
+      {!Object.keys(contacts).length && <h1>No Saved Contacts</h1>}
 
       {/* List out existing contacts: */}
       {contacts.map((contact) => {
         return (
-          <a key={contact.id} className="block cursor-pointer">
-            {contact.display_name}
-          </a>
+          <div key={contact.id} className="block cursor-pointer">
+            {" "}
+            <a>{contact.display_name}</a>
+          </div>
         );
       })}
 

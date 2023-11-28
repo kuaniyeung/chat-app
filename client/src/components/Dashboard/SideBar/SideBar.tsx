@@ -3,7 +3,7 @@ import ContactsTab from "./ContactsTab";
 import SideBarTab from "./SideBarTab";
 import { useAppSelector } from "../../../app/hooks";
 import { useState } from "react";
-import AddNewChatroomDialog from "./StartNewChatroomDialog";
+import AddNewChatroomDialog from "./AddNewChatroomDialog";
 import AddNewContactDialog from "./AddNewContactDialog";
 
 const SideBar = () => {
@@ -20,20 +20,21 @@ const SideBar = () => {
       {isChatroomSelected && (
         <ChatroomsTab onClick={() => setShowAddChatroom(!showAddChatroom)} />
       )}
-      {showAddChatroom && (
-        <AddNewChatroomDialog
-          // closeAdd={() => setShowAddChatroom(!showAddChatroom)}
-        />
-      )}
+
+      <AddNewChatroomDialog
+        isAddChatroomOpen={showAddChatroom}
+        closeAdd={() => setShowAddChatroom(!showAddChatroom)}
+      />
+
       {isContactSelected && (
         <ContactsTab onClick={() => setShowAddContact(!showAddContact)} />
       )}
-      
+
       <AddNewContactDialog
-        isOpen={showAddContact}
+        isAddContactOpen={showAddContact}
         closeAdd={() => setShowAddContact(!showAddContact)}
       />
-      
+
       <SideBarTab />
     </>
   );

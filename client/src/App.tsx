@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import SignInPage from "./components/SignInPage/SignInPage";
 import CreateNewUser from "./components/SignInPage/CreateNewUser";
 import Dashboard from "./components/Dashboard/Dashboard";
@@ -79,36 +79,26 @@ function App() {
 
   // ------ TESTING ------ //
 
-  const testEmail = "test@test.com";
-  const verifiedContact = {
-    user_id: 6,
-    user_email: "test6@email.com",
-    display_name: "Tester1",
-  };
+  // const testEmail = "newuser@test.com";
+  // const verifiedContact = {
+  //   user_id: 6,
+  //   user_email: "test6@email.com",
+  //   display_name: "Tester1",
+  // };
 
-  const testing = async () => {
-    try {
-      const { data: existingContacts, error } = await supabase
-        .from("users")
-        .select("contacts")
-        .eq("email", testEmail);
+  // const testing = async () => {
+  //   try {
+  //     const { data: existingChatrooms, error } = await supabase
+  //       .from("chatrooms")
+  //       .select("members");
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      console.log(existingContacts);
-
-      const contactExists = existingContacts.some(
-        (user) => user.contacts.display_name === verifiedContact.display_name
-      );
-
-      if (contactExists)
-        throw new Error("Contact already exists in contact list.");
-
-      console.log("good");
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  //     console.log(existingChatrooms);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   // testing();
 

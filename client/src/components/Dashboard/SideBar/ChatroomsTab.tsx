@@ -11,7 +11,18 @@ const ChatroomsTab:React.FC<Props> = ({onClick}) => {
   return (
     <>
       <h1>Your Chatrooms</h1>
-      {!chatrooms && <h1>No Saved Chatrooms</h1>}
+
+      {/* If no chatrooms added: */}
+      {!Object.keys(chatrooms).length && <h1>No Saved Chatrooms</h1>}
+
+      {/* List out existing chatrooms: */}
+      {chatrooms.map((chatroom) => {
+          return (
+            <a key={chatroom.id} className="block cursor-pointer">
+              {chatroom.name}
+            </a>
+          );
+        })}
       <button className="btn btn-primary" onClick={onClick}>
         Start New Chatrooms
       </button>

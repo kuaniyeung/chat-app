@@ -39,11 +39,10 @@ export const getContacts = createAsyncThunk(
         .eq("email", currentUser.email);
 
       if (error) throw error;
-      
+
       const contactsArray = contacts[0]?.contacts || [];
 
       return contactsArray as Contact[];
-      
     } catch (error) {
       return rejectWithValue(error as Error);
     }
@@ -53,7 +52,11 @@ export const getContacts = createAsyncThunk(
 export const addNewContact = createAsyncThunk(
   "contact/addNewContact",
   async (payload: AddNewContactPayload, { rejectWithValue, getState }) => {
-    let verifiedContact;
+    let verifiedContact: Contact = {
+      id: "",
+      email: "",
+      display_name: "",
+    };
     const currentState: RootState = getState() as RootState;
     const currentUser = currentState.user.user;
 
@@ -66,6 +69,7 @@ export const addNewContact = createAsyncThunk(
         .eq("display_name", payload.displayName);
 
       if (error) throw error;
+
       if (!verifiedUser.length)
         throw new Error(
           "User does not exist, cannot add as contact. \nPlease make sure you have the correct display name."
@@ -80,24 +84,23 @@ export const addNewContact = createAsyncThunk(
 
     // Validate new contact: has it been added already?
 
-        try {
-          const { data: verifiedUser, error } = await supabase
-            .from("users")
-            .select("contacts")
-            .eq("email", currentUser.email);
+    try {
+      const { data: existingContacts, error } = await supabase
+        .from("users")
+        .select("contacts")
+        .eq("email", currentUser.email);
 
-          if (error) throw error;
-          if (!verifiedUser.length)
-            throw new Error(
-              "Contact already exists in contact list."
-            );
+      if (error) throw error;
 
-          if (verifiedUser.length === 1) {
-            verifiedContact = verifiedUser[0];
-          }
-        } catch (error) {
-          return rejectWithValue(error as Error);
-        }
+      const contactExists = existingContacts.some(
+        (user) => user.contacts?.display_name === verifiedContact?.display_name
+      );
+
+      if (contactExists)
+        throw new Error("Contact already exists in contact list.");
+    } catch (error) {
+      return rejectWithValue(error as Error);
+    }
 
     // Add new contact to user
 
