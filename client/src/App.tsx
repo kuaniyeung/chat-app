@@ -1,5 +1,4 @@
 import "./App.css";
-
 import { useEffect, useState } from "react";
 import SignInPage from "./components/SignInPage/SignInPage";
 import CreateNewUser from "./components/SignInPage/CreateNewUser";
@@ -79,28 +78,100 @@ function App() {
 
   // ------ TESTING ------ //
 
-  // const testEmail = "newuser@test.com";
-  // const verifiedContact = {
-  //   user_id: 6,
-  //   user_email: "test6@email.com",
-  //   display_name: "Tester1",
-  // };
+  const testUser = {
+    id: "10d54f73-1223-420f-bb13-497a62c3ff73",
+    email: "test@test.com",
+    display_name: "Asdf",
+  };
+  const verifiedContact = {
+    id: "060a8a80-df76-44a1-a5b5-e3b29f65a87b",
+    email: "testtoday@test.com",
+    display_name: "Contact1",
+  };
 
   // const testing = async () => {
+  //   let chatrooms;
+
+  //   // Check existing chatrooms
+
   //   try {
-  //     const { data: existingChatrooms, error } = await supabase
-  //       .from("chatrooms")
-  //       .select("members");
+  //     const { data: chatroomsData, error } = await supabase
+  //       .from("chatrooms_members")
+  //       .select("chatroom_id, chatrooms!inner(name)")
+  //       .eq("member_id", testUser.id);
 
   //     if (error) throw error;
 
-  //     console.log(existingChatrooms);
+  //     console.log(chatroomsData);
+
+  //     if (chatroomsData.length === 0) return;
+
+  //     chatrooms = chatroomsData.map((chatroomData) => ({
+  //       id: chatroomData.chatroom_id,
+  //       name: chatroomData.chatrooms.name,
+  //       members: [],
+  //     }));
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+
+  //   // Check existing members in chatrooms
+
+  //   try {
+  //     const promises: Promise<{
+  //       id: any;
+  //       name: any;
+  //       members: Array<{ id: any; display_name: any }> | undefined;
+  //     } | null>[] = (chatrooms ?? []).map(async (chatroom) => {
+  //       const { data } = await supabase
+  //         .from("chatrooms_members")
+  //         .select("member_id, users!inner(display_name)")
+  //         .eq("chatroom_id", chatroom.id);
+
+  //       return {
+  //         id: chatroom.id,
+  //         name: chatroom.name,
+  //         members: data?.map((member) => ({
+  //           id: member.member_id,
+  //           display_name: member.users.display_name,
+  //         })),
+  //       };
+  //     });
+
+  //     try {
+  //       chatrooms = await Promise.all(promises);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+
+  //     console.log(chatrooms);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  // const testing2 = async () => {
+  //   try {
+  //     const { data: contactsData, error } = await supabase.rpc(
+  //       "get_contact2s",
+  //       {
+  //         p_contact1_id: testUser.id,
+  //       }
+  //     );
+
+  //     if (error) throw error;
+
+  //     console.log(contactsData);
   //   } catch (error) {
   //     console.error(error);
   //   }
   // };
 
   // testing();
+
+  // testing2();
+
+  // console.log(contacts);
 
   // --- RENDER THE COMPONENT --- //
 

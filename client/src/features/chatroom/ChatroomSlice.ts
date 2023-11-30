@@ -33,21 +33,59 @@ export const getChatrooms = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     const currentState: RootState = getState() as RootState;
     const currentUser = currentState.user.user;
+    let chatrooms;
+
+    // Fetch existing chatrooms
 
     try {
-      const { data: existingChatrooms, error } = await supabase
-        .from("chatrooms")
-        .select("*");
+      const { data: chatroomsData, error } = await supabase
+        .from("chatrooms_members")
+        .select("chatroom_id, chatrooms!inner(name)")
+        .eq("member_id", currentUser.id);
 
       if (error) throw error;
 
-      const filteredChatrooms = existingChatrooms.filter((chatroom) =>
-        chatroom.members.some(
-          (member: { email: string }) => member.email === currentUser.email
-        )
-      );
+      if (chatroomsData.length === 0) return;
 
-      return filteredChatrooms as Chatroom[];
+      chatrooms = chatroomsData.map((chatroomData) => ({
+        id: chatroomData.chatroom_id,
+        name: chatroomData.chatrooms.name,
+        members: [],
+      }));
+    } catch (error) {
+      return rejectWithValue(error as Error);
+    }
+
+    // Fetch existing members in chatrooms
+
+    try {
+      const promises: Promise<{
+        id: any;
+        name: any;
+        members: Array<{ id: any; display_name: any }> | undefined;
+      } | null>[] = (chatrooms ?? []).map(async (chatroom) => {
+        const { data } = await supabase
+          .from("chatrooms_members")
+          .select("member_id, users!inner(display_name)")
+          .eq("chatroom_id", chatroom.id);
+
+        return {
+          id: chatroom.id,
+          name: chatroom.name,
+          members: data?.map((member) => ({
+            id: member.member_id,
+            display_name: member.users.display_name,
+          })),
+        };
+      });
+
+      try {
+        chatrooms = await Promise.all(promises);
+      } catch (error) {
+        return rejectWithValue(error as Error);
+      }
+
+      return chatrooms as Chatroom[];
     } catch (error) {
       return rejectWithValue(error as Error);
     }
@@ -56,8 +94,28 @@ export const getChatrooms = createAsyncThunk(
 
 export const addNewChatroom = createAsyncThunk(
   "chatrooms/addNewChatroom",
-  async (payload: AddNewChatroomPayload, { rejectWithValue }) => {
-    // Validate if this chatroom exists
+  async (payload: AddNewChatroomPayload, { rejectWithValue, getState }) => {
+    const currentState: RootState = getState() as RootState;
+    const currentChatrooms = currentState.chatroom.chatrooms;
+
+    const objectsEqual = (c1: Contact, c2: Contact): boolean => {
+      return (
+        c1.id === c2.id &&
+        c1.display_name === c2.display_name
+      );
+    };
+
+    const arraysEqual = (a1: Contact[], a2: Contact[]) => {
+      const sortedA1 = [...a1].sort((o1, o2) => o1.id.localeCompare(o2.id));
+      const sortedA2 = [...a2].sort((o1, o2) => o1.id.localeCompare(o2.id));
+
+      return (
+        sortedA1.length === sortedA2.length &&
+        sortedA1.every((o, idx) => objectsEqual(o, sortedA2[idx]))
+      );
+    };
+
+    // Validate if new chatroom exists
 
     try {
       const { data: membersOfExistingChatrooms, error } = await supabase
@@ -67,14 +125,7 @@ export const addNewChatroom = createAsyncThunk(
       if (error) throw error;
 
       const doesChatroomExist = membersOfExistingChatrooms.some((chatroom) =>
-        chatroom.members.every((member: Contact) =>
-          payload.members.some(
-            (payloadMember) =>
-              payloadMember.id === member.id &&
-              payloadMember.email === member.email &&
-              payloadMember.display_name === member.display_name
-          )
-        )
+        arraysEqual(payload.members, chatroom.members)
       );
 
       if (doesChatroomExist) throw new Error("Chatroom already exists");
@@ -92,7 +143,9 @@ export const addNewChatroom = createAsyncThunk(
 
       if (error) throw error;
 
-      return newChatroom as Chatroom[];
+      const newChatroomList = [...currentChatrooms, newChatroom[0]];
+
+      return newChatroomList as Chatroom[];
     } catch (error) {
       return rejectWithValue(error as Error);
     }
@@ -113,9 +166,17 @@ export const chatroomSlice = createSlice({
     });
     builder.addCase(
       getChatrooms.fulfilled,
-      (state, action: PayloadAction<Chatroom[]>) => {
+      (
+        state,
+        action: PayloadAction<
+          Chatroom[] | undefined,
+          string,
+          { arg: void; requestId: string; requestStatus: "fulfilled" },
+          never
+        >
+      ) => {
         (state.loading = false),
-          (state.chatrooms = action.payload),
+          (state.chatrooms = action.payload || []),
           (state.error = "");
       }
     );

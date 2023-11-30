@@ -4,7 +4,6 @@ import type { RootState } from "../../app/store";
 
 export type Contact = {
   id: string;
-  email: string;
   display_name: string;
 };
 
@@ -33,19 +32,17 @@ export const getContacts = createAsyncThunk(
     const currentUser = currentState.user.user;
 
     try {
-      const { data: contacts, error } = await supabase
-        .from("users")
-        .select("contacts")
-        .eq("email", currentUser.email);
+      const { data: contactsData, error } = await supabase.rpc("get_contacts", {
+        p_user_id: currentUser.id,
+      });
 
       if (error) throw error;
 
-      const contactsArray = contacts[0]?.contacts || [];
-
-      return contactsArray as Contact[];
+      return contactsData;
     } catch (error) {
       return rejectWithValue(error as Error);
     }
+
   }
 );
 
@@ -54,7 +51,6 @@ export const addNewContact = createAsyncThunk(
   async (payload: AddNewContactPayload, { rejectWithValue, getState }) => {
     let verifiedContact: Contact = {
       id: "",
-      email: "",
       display_name: "",
     };
     const currentState: RootState = getState() as RootState;
@@ -65,14 +61,14 @@ export const addNewContact = createAsyncThunk(
     try {
       const { data: verifiedUser, error } = await supabase
         .from("users")
-        .select("id, email, display_name")
+        .select("id, display_name")
         .eq("display_name", payload.displayName);
 
       if (error) throw error;
 
       if (!verifiedUser.length)
         throw new Error(
-          "User does not exist, cannot add as contact. \nPlease make sure you have the correct display name."
+          "Invalid entry. \nPlease make sure you have the correct display name."
         );
 
       if (verifiedUser.length === 1) {
@@ -85,15 +81,18 @@ export const addNewContact = createAsyncThunk(
     // Validate new contact: has it been added already?
 
     try {
-      const { data: existingContacts, error } = await supabase
-        .from("users")
-        .select("contacts")
-        .eq("email", currentUser.email);
+      const { data: existingContacts, error } = await supabase.rpc(
+        "get_contacts",
+        {
+          p_user_id: currentUser.id,
+        }
+      );
 
       if (error) throw error;
 
       const contactExists = existingContacts.some(
-        (user) => user.contacts?.display_name === verifiedContact?.display_name
+        (contact: Contact) =>
+          contact.display_name === verifiedContact?.display_name
       );
 
       if (contactExists)
@@ -102,17 +101,22 @@ export const addNewContact = createAsyncThunk(
       return rejectWithValue(error as Error);
     }
 
-    // Add new contact to user
+    // Add new contact to contacts table
 
     try {
-      const { data: updatedData, error } = await supabase.rpc("add_contact", {
-        p_email: currentUser.email,
-        p_verified_contact: verifiedContact,
-      });
+      const { error } = await supabase
+        .from("contacts")
+        .insert([
+          {
+            contact1_user_id: verifiedContact.id,
+            contact2_user_id: currentUser.id,
+          },
+        ])
+        .select();
 
       if (error) throw error;
 
-      return updatedData as Contact[];
+      return verifiedContact;
     } catch (error) {
       return rejectWithValue(error as Error);
     }
@@ -148,9 +152,9 @@ export const contactSlice = createSlice({
     });
     builder.addCase(
       addNewContact.fulfilled,
-      (state, action: PayloadAction<Contact[]>) => {
+      (state, action: PayloadAction<Contact>) => {
         (state.loading = false),
-          (state.contacts = action.payload),
+          (state.contacts = [...state.contacts, action.payload]),
           (state.error = "");
       }
     );

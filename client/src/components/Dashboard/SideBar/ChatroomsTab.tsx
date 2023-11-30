@@ -5,8 +5,9 @@ interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-const ChatroomsTab:React.FC<Props> = ({onClick}) => {
+const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
   const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
+  const user = useAppSelector((state) => state.user.user);
 
   return (
     <>
@@ -17,12 +18,21 @@ const ChatroomsTab:React.FC<Props> = ({onClick}) => {
 
       {/* List out existing chatrooms: */}
       {chatrooms.map((chatroom) => {
-          return (
-            <a key={chatroom.id} className="block cursor-pointer">
-              {chatroom.name}
-            </a>
-          );
-        })}
+        let content;
+
+        if (chatroom.name === "")
+          content = `You, ${chatroom.members
+            .filter((member) => member.id !== user.id)
+            .map((member) => member.display_name)
+            .join(", ")}`
+        if (chatroom.name !== "") content = chatroom.name;
+
+        return (
+          <div key={chatroom.id} className="block cursor-pointer">
+            <a>{content}</a>
+          </div>
+        );
+      })}
       <button className="btn btn-primary" onClick={onClick}>
         Start New Chatrooms
       </button>
