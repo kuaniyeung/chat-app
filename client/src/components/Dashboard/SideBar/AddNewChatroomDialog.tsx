@@ -14,6 +14,8 @@ const AddNewChatroomDialog: React.FC<Props> = ({
   isAddChatroomOpen,
   closeAdd,
 }) => {
+
+  // States from store
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
   const userAsContact: Contact | undefined = user.id
@@ -25,8 +27,8 @@ const AddNewChatroomDialog: React.FC<Props> = ({
   const contacts = useAppSelector((state) => state.contact.contacts);
   const loading = useAppSelector((state) => state.chatroom.loading);
 
+  // Local states
   const nameRef = useRef<HTMLInputElement | null>(null);
-
   const [name, setName] = useState("");
   const [selectedContactsIds, setSelectedContactsIds] = useState<string[]>([]);
   const [errMsg, setErrMsg] = useState<string | undefined>("");

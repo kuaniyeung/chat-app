@@ -3,8 +3,8 @@ import { Contact } from "../contact/ContactSlice";
 import { supabase } from "../../SupabasePlugin";
 import type { RootState } from "../../app/store";
 
-type Chatroom = {
-  id: number;
+export type Chatroom = {
+  id: number | null;
   name?: string;
   members: Contact[];
 };
@@ -47,7 +47,7 @@ export const getChatrooms = createAsyncThunk(
 
       if (chatroomsData.length === 0) return;
 
-      chatrooms = chatroomsData.map((chatroomData) => ({
+      chatrooms = chatroomsData.map((chatroomData: any) => ({
         id: chatroomData.chatroom_id,
         name: chatroomData.chatrooms.name,
         members: [],
@@ -72,7 +72,7 @@ export const getChatrooms = createAsyncThunk(
         return {
           id: chatroom.id,
           name: chatroom.name,
-          members: data?.map((member) => ({
+          members: data?.map((member: any) => ({
             id: member.member_id,
             display_name: member.users.display_name,
           })),
@@ -97,12 +97,12 @@ export const addNewChatroom = createAsyncThunk(
   async (payload: AddNewChatroomPayload, { rejectWithValue, getState }) => {
     const currentState: RootState = getState() as RootState;
     const currentChatrooms = currentState.chatroom.chatrooms;
+    const membersOfCurrentChatrooms = currentChatrooms.map(
+      (chatroom) => chatroom.members
+    );
 
     const objectsEqual = (c1: Contact, c2: Contact): boolean => {
-      return (
-        c1.id === c2.id &&
-        c1.display_name === c2.display_name
-      );
+      return c1.id === c2.id && c1.display_name === c2.display_name;
     };
 
     const arraysEqual = (a1: Contact[], a2: Contact[]) => {
@@ -118,14 +118,8 @@ export const addNewChatroom = createAsyncThunk(
     // Validate if new chatroom exists
 
     try {
-      const { data: membersOfExistingChatrooms, error } = await supabase
-        .from("chatrooms")
-        .select("members");
-
-      if (error) throw error;
-
-      const doesChatroomExist = membersOfExistingChatrooms.some((chatroom) =>
-        arraysEqual(payload.members, chatroom.members)
+      const doesChatroomExist = membersOfCurrentChatrooms.some((chatroom) =>
+        arraysEqual(payload.members, chatroom)
       );
 
       if (doesChatroomExist) throw new Error("Chatroom already exists");
@@ -135,19 +129,53 @@ export const addNewChatroom = createAsyncThunk(
 
     // Add new chatroom
 
+    let newChatroom: Chatroom = { id: null, name: "", members: [] };
+
     try {
-      const { data: newChatroom, error } = await supabase
+      const { data, error } = await supabase
         .from("chatrooms")
-        .insert([{ name: payload.name, members: payload.members }])
-        .select();
+        .insert([{ name: payload.name }])
+        .select("id, name");
 
       if (error) throw error;
 
-      const newChatroomList = [...currentChatrooms, newChatroom[0]];
-
-      return newChatroomList as Chatroom[];
+      newChatroom = { ...newChatroom, id: data[0].id, name: data[0].name };
     } catch (error) {
       return rejectWithValue(error as Error);
+    }
+
+    // Add new chatroom members
+
+    try {
+      const promises: Promise<
+        | {
+            member_id: any;
+            users: {
+              display_name: any;
+            }[];
+          }[]
+        | null
+      >[] = payload.members.map(async (member: any) => {
+        const { data, error } = await supabase
+          .from("chatrooms_members")
+          .insert([{ chatroom_id: newChatroom.id, member_id: member.id }]);
+
+        if (error) throw error;
+
+        return data;
+      });
+
+      try {
+        await Promise.all(promises);
+      } catch (error) {
+        return console.error(error);
+      }
+
+      newChatroom = { ...newChatroom, members: payload.members };
+
+      return newChatroom as Chatroom;
+    } catch (error) {
+      return console.error(error);
     }
   }
 );
@@ -189,10 +217,24 @@ export const chatroomSlice = createSlice({
     });
     builder.addCase(
       addNewChatroom.fulfilled,
-      (state, action: PayloadAction<Chatroom[]>) => {
-        (state.loading = false),
-          (state.chatrooms = action.payload),
-          (state.error = "");
+      (
+        state,
+        action: PayloadAction<
+          Chatroom | void,
+          string,
+          {
+            arg: AddNewChatroomPayload;
+            requestId: string;
+            requestStatus: "fulfilled";
+          },
+          never
+        >
+      ) => {
+        if (action.payload) {
+          state.loading = false;
+          state.chatrooms = [...state.chatrooms, action.payload];
+          state.error = "";
+        }
       }
     );
     builder.addCase(addNewChatroom.rejected, (state, action) => {

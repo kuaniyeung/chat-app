@@ -14,11 +14,12 @@ const AddNewContactDialog: React.FC<Props> = ({
   isAddContactOpen,
   closeAdd,
 }) => {
+  // States from store
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.contact.loading);
 
+  // Local states
   const displayNameRef = useRef<HTMLInputElement | null>(null);
-
   const [displayName, setDisplayName] = useState("");
   const [errMsg, setErrMsg] = useState<string | undefined>("");
   const [warningDialogIsOpen, setWarningDialogIsOpen] =
