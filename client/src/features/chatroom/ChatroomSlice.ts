@@ -3,14 +3,15 @@ import { Contact } from "../contact/ContactSlice";
 import { supabase } from "../../SupabasePlugin";
 import type { RootState } from "../../app/store";
 
-export type Chatroom = {
-  id: number | null;
+export interface Chatroom {
+  id: number;
   name?: string;
   members: Contact[];
 };
 
-type InitialState = {
+interface InitialState {
   isSelected: boolean;
+  selectedChatroom: Chatroom | null;
   loading: boolean;
   chatrooms: Chatroom[];
   error: string;
@@ -23,6 +24,7 @@ interface AddNewChatroomPayload {
 
 const initialState: InitialState = {
   isSelected: true,
+  selectedChatroom: null,
   loading: false,
   chatrooms: [],
   error: "",
@@ -129,7 +131,7 @@ export const addNewChatroom = createAsyncThunk(
 
     // Add new chatroom
 
-    let newChatroom: Chatroom = { id: null, name: "", members: [] };
+    let newChatroom: Chatroom = { id: 0, name: "", members: [] };
 
     try {
       const { data, error } = await supabase
@@ -187,6 +189,9 @@ export const chatroomSlice = createSlice({
     setChatroomTabSelected: (state, action) => {
       state.isSelected = action.payload;
     },
+    setSelectedChatroom: (state, action) => {
+      state.selectedChatroom = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(getChatrooms.pending, (state) => {
@@ -245,4 +250,4 @@ export const chatroomSlice = createSlice({
 });
 
 export default chatroomSlice.reducer;
-export const { setChatroomTabSelected } = chatroomSlice.actions;
+export const { setChatroomTabSelected, setSelectedChatroom } = chatroomSlice.actions;

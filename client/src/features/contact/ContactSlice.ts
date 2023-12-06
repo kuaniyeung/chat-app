@@ -2,12 +2,12 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { supabase } from "../../SupabasePlugin";
 import type { RootState } from "../../app/store";
 
-export type Contact = {
+export interface Contact {
   id: string;
   display_name: string;
 };
 
-type InitialState = {
+interface InitialState {
   isSelected: boolean;
   loading: boolean;
   contacts: Contact[];

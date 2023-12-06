@@ -7,12 +7,15 @@ import ConfirmationDialog from "../Dialogs/ConfirmationDialog";
 import { signOutUser } from "../../features/user/userSlice";
 import { getContacts } from "../../features/contact/ContactSlice";
 import { getChatrooms } from "../../features/chatroom/ChatroomSlice";
+import Chat from "./Chat/Chat";
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
   const displayName = useAppSelector((state) => state.user.user.display_name);
+  const selectedChatroom = useAppSelector(state => state.chatroom.selectedChatroom)
   const [confirmationDialogIsOpen, setConfirmationDialogIsOpen] =
     useState(false);
+
 
   const fetchContacts = async () => {
     try {
@@ -89,6 +92,9 @@ const Dashboard = () => {
         onCancel={() => setConfirmationDialogIsOpen(false)}
         text={"Are you sure you want to sign out?"}
       />
+
+      {/* Chat */}
+      {selectedChatroom && <Chat />}
     </>
   );
 };

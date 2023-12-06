@@ -75,7 +75,7 @@ function App() {
     setUserData();
   }, [session?.access_token]);
 
-  // console.log(
+  // console.info(
   //   "Change Enable Email's Comfirm Email settings back to enabled when project is finalized"
   // );
 

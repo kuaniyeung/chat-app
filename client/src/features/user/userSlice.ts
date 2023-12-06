@@ -3,14 +3,14 @@ import type { PayloadAction, SerializedError } from "@reduxjs/toolkit";
 import { supabase } from "../../SupabasePlugin";
 import { Session } from "@supabase/supabase-js";
 
-export type User = {
+export interface User {
   id?: string;
   display_name?: string;
   email?: string;
   created_at?: string;
 };
 
-type InitialState = {
+interface InitialState {
   loading: boolean;
   user: User;
   error: string;

@@ -4,7 +4,7 @@ import { Session } from "@supabase/supabase-js";
 import { createUser, signInUser, signOutUser } from "../user/userSlice";
 import { supabase } from "../../SupabasePlugin";
 
-type InitialState = {
+interface InitialState {
   loading: boolean;
   session: Session | null;
   error: string;

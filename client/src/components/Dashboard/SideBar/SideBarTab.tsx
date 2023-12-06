@@ -10,7 +10,6 @@ const SideBarTab = () => {
   const isContactSelected = useAppSelector((state) => state.contact.isSelected);
   const classes = "tab w-2/4 transition-all duration-300 ease-in-out transform";
 
-
   return (
     <div className="tabs tabs-boxed fixed w-full z-10 bottom-0">
       <a
