@@ -1,18 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import ChatForm from "./ChatForm";
-import { setSelectedChatroom } from "../../../features/chatroom/ChatroomSlice";
+import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { getMessagesByChatroom } from "../../../features/message/MessageSlice";
+import { getMessagesByChatroom } from "../../../features/message/messageSlice";
 import { useEffect, useState } from "react";
 import Messages from "./Messages";
 import LoadingSpinner from "../../LoadingSpinner";
 
-
-
-
 const Chat = () => {
-
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
   const selectedChatroom = useAppSelector(
@@ -20,12 +16,12 @@ const Chat = () => {
   );
   const messages = useAppSelector((state) => state.message.messages);
   const loading = useAppSelector((state) => state.message.loading);
-  const [initialFetch, setInitialFetch] = useState(false)
+  const [initialFetch, setInitialFetch] = useState(false);
 
   const fetchMessages = async () => {
     try {
       await dispatch(getMessagesByChatroom()).unwrap();
-      setInitialFetch(false)
+      setInitialFetch(false);
     } catch (error) {
       console.error(
         "An error occurred while dispatching fetchMessages:",
@@ -45,11 +41,9 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    setInitialFetch(true)
+    setInitialFetch(true);
     fetchMessages();
   }, []);
-
-  
 
   return (
     <div className="fixed bottom-0 left-0 right-0 w-full h-full bg-base-100 z-20 p-2">
@@ -62,7 +56,10 @@ const Chat = () => {
           {/* Close button */}
           <button
             className="btn btn-circle btn-ghost"
-            onClick={() => dispatch(setSelectedChatroom(null))}
+            onClick={() => {
+              dispatch(setSelectedChatroom(null));
+
+            }}
           >
             <FontAwesomeIcon icon={faXmark} className="w-4 h-4" />
           </button>
@@ -72,9 +69,9 @@ const Chat = () => {
         <div className="flex flex-col grow overflow-auto h-full">
           {!Object.keys(messages).length && <h1>No messages in this chat</h1>}
 
-         {initialFetch && loading ? ( 
+          {initialFetch && loading ? (
             <LoadingSpinner colour={"neutral-content"} />
-          ) : ( 
+          ) : (
             <Messages />
           )}
         </div>

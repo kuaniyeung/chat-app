@@ -5,17 +5,18 @@ import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import ConfirmationDialog from "../Dialogs/ConfirmationDialog";
 import { signOutUser } from "../../features/user/userSlice";
-import { getContacts } from "../../features/contact/ContactSlice";
-import { getChatrooms } from "../../features/chatroom/ChatroomSlice";
+import { getContacts } from "../../features/contact/contactSlice";
+import { getChatrooms } from "../../features/chatroom/chatroomSlice";
 import Chat from "./Chat/Chat";
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
   const displayName = useAppSelector((state) => state.user.user.display_name);
-  const selectedChatroom = useAppSelector(state => state.chatroom.selectedChatroom)
+  const selectedChatroom = useAppSelector(
+    (state) => state.chatroom.selectedChatroom
+  );
   const [confirmationDialogIsOpen, setConfirmationDialogIsOpen] =
     useState(false);
-
 
   const fetchContacts = async () => {
     try {

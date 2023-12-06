@@ -1,6 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../../app/hooks";
-import { setChatroomTabSelected } from "../../../features/chatroom/ChatroomSlice";
-import { setContactTabSelected } from "../../../features/contact/ContactSlice";
+import { setChatroomTabSelected } from "../../../features/chatroom/chatroomSlice";
+import { setContactTabSelected } from "../../../features/contact/contactSlice";
 
 const SideBarTab = () => {
   const dispatch = useAppDispatch();

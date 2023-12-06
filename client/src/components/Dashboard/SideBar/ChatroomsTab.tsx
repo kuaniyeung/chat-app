@@ -1,7 +1,6 @@
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { setSelectedChatroom } from "../../../features/chatroom/ChatroomSlice";
+import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
 import { MouseEvent } from "react";
-
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -10,9 +9,6 @@ const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
   const dispatch = useAppDispatch();
   const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
   const user = useAppSelector((state) => state.user.user);
-  const selectedChatroom = useAppSelector(
-    (state) => state.chatroom.selectedChatroom
-  );
 
   return (
     <>

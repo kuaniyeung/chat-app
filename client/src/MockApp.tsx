@@ -10,19 +10,23 @@ const App2 = () => {
 
     const joinRoom = () => {
       if (room !== "") {
+        console.log(room);
         socket.emit("join_room", room);
       }
     };
 
   const sendMsg = () => {
-    socket.emit("send_message", { message: msg });
+    console.log(msg);
+    socket.emit("send_message", { message: msg, room  });
   };
 
   useEffect(() => {
     socket.on("receive_message", (data) => {
+      console.log("received data: ", data);
       setMsgReceived(data.message);
     });
   }, [socket]);
+  
   return (
     <div>
       <input

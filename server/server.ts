@@ -3,33 +3,48 @@ import express, { Express, Request, Response } from "express";
 import { createServer } from "node:http";
 import cors from "cors";
 import "dotenv/config";
+import {
+  Message,
+  ClientToServerEvents,
+  ServerToClientEvents,
+} from "./interfaces";
 
 const app: Express = express();
 app.use(cors());
 const server = createServer(app);
 const port = process.env.PORT;
 
-const io = new Server(server, {
+app.get("/", (req: Request, res: Response) => {
+  res.send("Welcome to the Socket.IO server!");
+});
+
+server.listen(port, () => {
+  console.log("SERVER IS RUNNING");
+});
+
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: {
     origin: process.env.CLIENT_ORIGIN,
     methods: ["GET", "POST"],
   },
 });
 
-// io.on("connection", (socket)=> {
-//     socket.on("join_room", (data) => {
-//       socket.join(data);
-//     });
+io.on("connection", (socket) => {
+  // Join room
+  socket.on("join_room", (data) => {
+    console.log("Joined room data: ", data, typeof data);
+    socket.join(data);
+  });
 
-//       socket.on("send_message", (data) => {
-//         socket.to(data.room).emit("receive_message", data);
-//       });
-// })
+  // Leave room
+  socket.on("leave_room", (data) => {
+    console.log("Left room data: ", data);
+    socket.leave(data);
+  });
 
-server.listen(port, () => {
-  console.log("SERVER IS RUNNING");
-});
-
-app.get("/hello", (req: Request, res: Response) => {
-  res.send("Hello, World!");
+  // Send & receive messages
+  socket.on("send_message", (data) => {
+    console.log("Sent data: ", data, data.chatroom_id);
+    socket.to(data.chatroom_id.toString()).emit("receive_message", data);
+  });
 });

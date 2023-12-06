@@ -11,8 +11,8 @@ import {
   retrieveSessionData,
 } from "./features/session/sessionSlice";
 import LoadingSpinner from "./components/LoadingSpinner";
-import { Contact } from "./features/contact/ContactSlice";
-import { Chatroom } from "./features/chatroom/ChatroomSlice";
+import { Contact } from "./features/contact/contactSlice";
+import { Chatroom } from "./features/chatroom/chatroomSlice";
 
 function App() {
   const [showAddUser, setAddUser] = useState(false);

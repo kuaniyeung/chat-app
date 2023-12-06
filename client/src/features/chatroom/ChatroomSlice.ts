@@ -1,5 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { Contact } from "../contact/ContactSlice";
+import { Contact } from "../contact/contactSlice";
 import { supabase } from "../../SupabasePlugin";
 import type { RootState } from "../../app/store";
 
@@ -7,7 +7,7 @@ export interface Chatroom {
   id: number;
   name?: string;
   members: Contact[];
-};
+}
 
 interface InitialState {
   isSelected: boolean;
@@ -15,7 +15,7 @@ interface InitialState {
   loading: boolean;
   chatrooms: Chatroom[];
   error: string;
-};
+}
 
 interface AddNewChatroomPayload {
   name?: string;
@@ -191,7 +191,7 @@ export const chatroomSlice = createSlice({
     },
     setSelectedChatroom: (state, action) => {
       state.selectedChatroom = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getChatrooms.pending, (state) => {
@@ -250,4 +250,5 @@ export const chatroomSlice = createSlice({
 });
 
 export default chatroomSlice.reducer;
-export const { setChatroomTabSelected, setSelectedChatroom } = chatroomSlice.actions;
+export const { setChatroomTabSelected, setSelectedChatroom } =
+  chatroomSlice.actions;

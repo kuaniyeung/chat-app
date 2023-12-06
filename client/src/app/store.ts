@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from '../features/user/userSlice'
-import sessionReducer from '../features/session/sessionSlice'
-import chatroomReducer from "../features/chatroom/ChatroomSlice"
-import contactReducer from "../features/contact/ContactSlice"
-import  messageReducer from "../features/message/MessageSlice";
+import userReducer from "../features/user/userSlice";
+import sessionReducer from "../features/session/sessionSlice";
+import chatroomReducer from "../features/chatroom/chatroomSlice";
+import contactReducer from "../features/contact/contactSlice";
+import messageReducer from "../features/message/messageSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,5 +15,5 @@ export const store = configureStore({
   },
 });
 
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

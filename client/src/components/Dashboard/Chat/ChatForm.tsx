@@ -7,8 +7,9 @@ import LoadingSpinner from "../../LoadingSpinner";
 import {
   addNewMessage,
   setNewMessage,
-} from "../../../features/message/MessageSlice";
+} from "../../../features/message/messageSlice";
 import { DateTime } from "luxon";
+import { socket } from "../../../SocketClient";
 
 const ChatForm = () => {
   const dispatch = useAppDispatch();
@@ -17,6 +18,7 @@ const ChatForm = () => {
   const selectedChatroom = useAppSelector(
     (state) => state.chatroom.selectedChatroom
   );
+  // const socket = useAppSelector((state) => state.socket.socket);
 
   const messageRef = useRef<HTMLInputElement | null>(null);
 
@@ -32,6 +34,45 @@ const ChatForm = () => {
   useEffect(() => {
     setErrMsg("");
   }, [message]);
+
+  const sendMessage = () => {
+    console.log("sent msg: ", message);
+    if (socket && selectedChatroom && user?.id) {
+      socket.emit("send_message", {
+        id: null,
+        content: message,
+        chatroom_id: selectedChatroom.id,
+        sender_id: user.id,
+        created_at: DateTime.now().toISO(),
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (selectedChatroom) {
+      socket.emit("join_room", selectedChatroom.id.toString());
+
+      console.log("socket listening to new msg");
+      socket.on("receive_message", (data) => {
+        console.log("received data: ", data);
+        dispatch(
+          setNewMessage({
+            id: null,
+            sender_id: data.sender_id,
+            content: data.content,
+            chatroom_id: data.chatroom_id,
+            created_at: data.created_at,
+          })
+        );
+      });
+    }
+
+    return () => {
+      if (selectedChatroom) {
+        socket.emit("leave_room", selectedChatroom.id.toString());
+      }
+    };
+  }, [socket.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,13 +92,15 @@ const ChatForm = () => {
         setErrMsg("An unknown error occurred.");
       }
 
+      sendMessage();
+
       dispatch(
         setNewMessage({
           id: null,
           sender_id: user.id,
           content: message,
           chatroom_id: selectedChatroom?.id,
-          created_at: DateTime.now(),
+          created_at: DateTime.now().toISO(),
         })
       );
       setMessage("");

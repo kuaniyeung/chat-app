@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { addNewChatroom } from "../../../features/chatroom/ChatroomSlice";
+import { addNewChatroom } from "../../../features/chatroom/chatroomSlice";
 import WarningDialog from "../../Dialogs/WarningDialog";
 import LoadingSpinner from "../../LoadingSpinner";
-import { Contact } from "../../../features/contact/ContactSlice";
+import { Contact } from "../../../features/contact/contactSlice";
 
 interface Props {
   isAddChatroomOpen: boolean;
@@ -14,7 +14,6 @@ const AddNewChatroomDialog: React.FC<Props> = ({
   isAddChatroomOpen,
   closeAdd,
 }) => {
-
   // States from store
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
@@ -59,7 +58,9 @@ const AddNewChatroomDialog: React.FC<Props> = ({
     }
 
     try {
-      const action = await dispatch(addNewChatroom({ name, members: selectedContacts }));
+      const action = await dispatch(
+        addNewChatroom({ name, members: selectedContacts })
+      );
 
       if (addNewChatroom.rejected.match(action)) {
         const error = action.payload as { message?: string };

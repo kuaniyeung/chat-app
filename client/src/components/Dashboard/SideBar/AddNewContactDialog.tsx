@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { addNewContact } from "../../../features/contact/ContactSlice";
+import { addNewContact } from "../../../features/contact/contactSlice";
 import WarningDialog from "../../Dialogs/WarningDialog";
 import LoadingSpinner from "../../LoadingSpinner";
 
@@ -8,7 +8,6 @@ interface Props {
   isAddContactOpen: boolean;
   closeAdd: Function;
 }
-
 
 const AddNewContactDialog: React.FC<Props> = ({
   isAddContactOpen,
