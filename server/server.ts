@@ -32,13 +32,11 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
 io.on("connection", (socket) => {
   // Join room
   socket.on("join_room", (data) => {
-    console.log("Joined room data: ", data, typeof data);
     socket.join(data);
   });
 
   // Leave room
   socket.on("leave_room", (data) => {
-    console.log("Left room data: ", data);
     socket.leave(data);
   });
 
@@ -52,5 +50,4 @@ io.on("connection", (socket) => {
   socket.on("send_typing", (data) => {
     socket.to(data.chatroom_id).emit("receive_typing", data);
   });
-
 });

@@ -36,10 +36,8 @@ const Messages = () => {
   useEffect(() => {
     if (socket) {
       let debounceTimer: ReturnType<typeof setTimeout>;
-      console.log(othersAreTyping);
       socket.on("receive_typing", (data) => {
         if (!othersAreTyping) {
-          console.log("triggered");
           setOthersAreTyping(true);
 
           const contact = contacts.find((c) => c.id === data.sender_id);
@@ -57,7 +55,8 @@ const Messages = () => {
             displayName = `Unknown User ${unknownUsersCount}`;
           }
 
-          setContactsTypingDisplayNames((prev) => [...prev, displayName]);
+            setContactsTypingDisplayNames((prev) => [...prev, displayName]
+            .filter((c, i, a) => c !== a[i - 1]));
 
           if (debounceTimer) {
             clearTimeout(debounceTimer);
@@ -65,20 +64,11 @@ const Messages = () => {
 
           debounceTimer = setTimeout(() => {
             setOthersAreTyping(false);
-          }, 1000); // 
+          }, 2000); //
         }
       });
-      // console.log("othersAreTyping:", othersAreTyping);
-      // console.log(
-      //   "contactsTypingDisplayNames:",
-      //   contactsTypingDisplayNames
-      // );
-      // console.log("contactsTypingDisplayNames", contactsTypingDisplayNames);
-
     }
-  }, [socket.id, othersAreTyping, contactsTypingDisplayNames]);
-
-console.log("contactsTypingDisplayNames", contactsTypingDisplayNames);
+  }, [socket.id]);
 
   const populateMessage = ({
     id,
@@ -170,11 +160,7 @@ console.log("contactsTypingDisplayNames", contactsTypingDisplayNames);
         populateMessage({
           id: null,
           isYours: false,
-          displayName: contactsTypingDisplayNames
-            .map((n, i, a) => {
-              n !== a[i - 1];
-            })
-            .join(""),
+          displayName: contactsTypingDisplayNames.join(", "),
           content: <TypingDots />,
           createdAt: null,
         })}
