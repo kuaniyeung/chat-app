@@ -64,7 +64,7 @@ const Messages = () => {
 
           debounceTimer = setTimeout(() => {
             setOthersAreTyping(false);
-          }, 2000); //
+          }, 1000); //
         }
       });
     }
