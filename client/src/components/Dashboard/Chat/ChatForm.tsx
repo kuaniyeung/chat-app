@@ -18,7 +18,6 @@ const ChatForm = () => {
   const selectedChatroom = useAppSelector(
     (state) => state.chatroom.selectedChatroom
   );
-  // const socket = useAppSelector((state) => state.socket.socket);
 
   const messageRef = useRef<HTMLInputElement | null>(null);
 
@@ -35,26 +34,11 @@ const ChatForm = () => {
     setErrMsg("");
   }, [message]);
 
-  const sendMessage = () => {
-    console.log("sent msg: ", message);
-    if (socket && selectedChatroom && user?.id) {
-      socket.emit("send_message", {
-        id: null,
-        content: message,
-        chatroom_id: selectedChatroom.id,
-        sender_id: user.id,
-        created_at: DateTime.now().toISO(),
-      });
-    }
-  };
-
   useEffect(() => {
     if (selectedChatroom) {
       socket.emit("join_room", selectedChatroom.id.toString());
 
-      console.log("socket listening to new msg");
       socket.on("receive_message", (data) => {
-        console.log("received data: ", data);
         dispatch(
           setNewMessage({
             id: null,
@@ -73,6 +57,27 @@ const ChatForm = () => {
       }
     };
   }, [socket.id]);
+
+  const sendMessage = () => {
+    if (socket && selectedChatroom && user?.id) {
+      socket.emit("send_message", {
+        id: null,
+        content: message,
+        chatroom_id: selectedChatroom.id,
+        sender_id: user.id,
+        created_at: DateTime.now().toISO(),
+      });
+    }
+  };
+
+  const sendStartTypingSignal = () => {
+    if (socket && selectedChatroom && user.id) {
+      socket.emit("send_typing", {
+        chatroom_id: selectedChatroom.id.toString(),
+        sender_id: user.id,
+      });
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,7 +133,10 @@ const ChatForm = () => {
           type="text"
           ref={messageRef}
           placeholder="New message"
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            sendStartTypingSignal();
+          }}
           value={message}
           autoComplete="off"
           required
@@ -141,7 +149,7 @@ const ChatForm = () => {
           disabled={message === "" ? true : false}
         >
           {loading ? (
-            <LoadingSpinner colour={"neutral-content"} />
+            <LoadingSpinner size={"md"} colour={"neutral-content"} />
           ) : (
             <FontAwesomeIcon icon={faPaperPlane} className="w-4 h-4" />
           )}

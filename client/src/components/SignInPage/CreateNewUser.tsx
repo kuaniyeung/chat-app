@@ -202,8 +202,8 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                     : "hidden"
                 }
               >
-                <FontAwesomeIcon icon={faInfoCircle} /> Must be over 2 and less than 70
-                characters.
+                <FontAwesomeIcon icon={faInfoCircle} /> Must be over 2 and less
+                than 70 characters.
               </p>
             </div>
 
@@ -299,7 +299,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                 className="btn btn-secondary form-control w-full max-w-xs my-3"
                 disabled={!validPassword || !validMatch ? true : false}
               >
-                <LoadingSpinner colour={"neutral-content"} />
+                <LoadingSpinner size={"md"} colour={"neutral-content"} />
               </button>
             ) : (
               <button

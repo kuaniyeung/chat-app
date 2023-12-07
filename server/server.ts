@@ -47,4 +47,10 @@ io.on("connection", (socket) => {
     console.log("Sent data: ", data, data.chatroom_id);
     socket.to(data.chatroom_id.toString()).emit("receive_message", data);
   });
+
+  // Send & receive typing signal
+  socket.on("send_typing", (data) => {
+    socket.to(data.chatroom_id).emit("receive_typing", data);
+  });
+
 });

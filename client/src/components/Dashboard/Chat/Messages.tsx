@@ -1,28 +1,84 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppSelector } from "../../../app/hooks";
 import { DateTime } from "luxon";
+import { socket } from "../../../SocketClient";
+import TypingDots from "./TypingDots";
 
 interface PopulateMessageType {
-  id: number;
+  id: number | null;
   isYours: boolean;
   displayName: string | null;
-  content: string;
-  createdAt: string;
+  content: string | React.ReactNode;
+  createdAt: string | null;
 }
 
 const Messages = () => {
   const user = useAppSelector((state) => state.user.user);
   const contacts = useAppSelector((state) => state.contact.contacts);
   const messages = useAppSelector((state) => state.message.messages);
-  let newestMessage: boolean | null = null
+  const [othersAreTyping, setOthersAreTyping] = useState(false);
+  const [contactsTypingDisplayNames, setContactsTypingDisplayNames] = useState<
+    string[]
+  >([]);
+  let newestMessage: boolean | null = null;
 
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (newestMessage && ref.current) {
-      ref.current.scrollIntoView({ behavior: "smooth" });
-    }
+    if (newestMessage && ref.current)
+      ref.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (othersAreTyping) ref.current?.scrollIntoView({ behavior: "smooth" });
+  }, [othersAreTyping]);
+
+  useEffect(() => {
+    if (socket) {
+      let debounceTimer: ReturnType<typeof setTimeout>;
+      console.log(othersAreTyping);
+      socket.on("receive_typing", (data) => {
+        if (!othersAreTyping) {
+          console.log("triggered");
+          setOthersAreTyping(true);
+
+          const contact = contacts.find((c) => c.id === data.sender_id);
+
+          let displayName: string;
+
+          if (contact) {
+            displayName = contact.display_name;
+          } else {
+            const unknownUsersCount =
+              contactsTypingDisplayNames.filter((n) =>
+                n.startsWith("Unknown User")
+              ).length + 1;
+
+            displayName = `Unknown User ${unknownUsersCount}`;
+          }
+
+          setContactsTypingDisplayNames((prev) => [...prev, displayName]);
+
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+
+          debounceTimer = setTimeout(() => {
+            setOthersAreTyping(false);
+          }, 1000); // 
+        }
+      });
+      // console.log("othersAreTyping:", othersAreTyping);
+      // console.log(
+      //   "contactsTypingDisplayNames:",
+      //   contactsTypingDisplayNames
+      // );
+      // console.log("contactsTypingDisplayNames", contactsTypingDisplayNames);
+
+    }
+  }, [socket.id, othersAreTyping, contactsTypingDisplayNames]);
+
+console.log("contactsTypingDisplayNames", contactsTypingDisplayNames);
 
   const populateMessage = ({
     id,
@@ -33,10 +89,15 @@ const Messages = () => {
   }: PopulateMessageType) => {
     const today = DateTime.now().toFormat("D");
     const yesterday = DateTime.now().minus({ days: 1 }).toFormat("D");
-    const modifiedCreatedAtDate = DateTime.fromISO(createdAt).toFormat("D");
-    const modifiedCreatedAtTime = DateTime.fromISO(createdAt).toFormat("t");
-    const modifiedCreatedAtDateTime =
-      DateTime.fromISO(createdAt).toFormat("LLL d', ' t");
+
+    let modifiedCreatedAtDate, modifiedCreatedAtTime, modifiedCreatedAtDateTime;
+
+    if (createdAt) {
+      modifiedCreatedAtDate = DateTime.fromISO(createdAt).toFormat("D");
+      modifiedCreatedAtTime = DateTime.fromISO(createdAt).toFormat("t");
+      modifiedCreatedAtDateTime =
+        DateTime.fromISO(createdAt).toFormat("LLL d', ' t");
+    }
 
     let displayCreatedAt;
 
@@ -105,6 +166,18 @@ const Messages = () => {
           });
         }
       })}
+      {othersAreTyping &&
+        populateMessage({
+          id: null,
+          isYours: false,
+          displayName: contactsTypingDisplayNames
+            .map((n, i, a) => {
+              n !== a[i - 1];
+            })
+            .join(""),
+          content: <TypingDots />,
+          createdAt: null,
+        })}
     </>
   );
 };

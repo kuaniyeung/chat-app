@@ -135,7 +135,7 @@ const Login = ({}) => {
                 type="submit"
                 className="btn btn-primary w-full max-w-xs mt-6"
               >
-                <LoadingSpinner colour={"neutral-content"} />
+                <LoadingSpinner size={"md"} colour={"neutral-content"} />
               </button>
             ) : (
               <button

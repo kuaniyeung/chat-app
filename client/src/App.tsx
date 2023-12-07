@@ -236,7 +236,7 @@ function App() {
   if (currentEventOnState === null) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <LoadingSpinner colour={"neutral-content"} />
+        <LoadingSpinner size={"lg"} colour={"neutral-content"} />
       </div>
     );
   }

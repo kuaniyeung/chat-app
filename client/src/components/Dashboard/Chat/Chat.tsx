@@ -70,7 +70,7 @@ const Chat = () => {
           {!Object.keys(messages).length && <h1>No messages in this chat</h1>}
 
           {initialFetch && loading ? (
-            <LoadingSpinner colour={"neutral-content"} />
+            <LoadingSpinner size={"lg"} colour={"neutral-content"} />
           ) : (
             <Messages />
           )}

@@ -1,14 +1,12 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-
-type Props = {
-    colour: string
+interface Props {
+  size: string;
+  colour: string;
 }
-const LoadingSpinner: React.FC<Props> = ({colour}) => {
+const LoadingSpinner: React.FC<Props> = ({ size, colour }) => {
   return (
-    <div className={`w-16 h-16 text-${colour} animate-spin p-2`}>
-      <FontAwesomeIcon icon={faSpinner} size="2x" />
-    </div>
+    <span
+      className={`loading loading-spinner loading-${size} text-${colour}`}
+    ></span>
   );
 };
 
