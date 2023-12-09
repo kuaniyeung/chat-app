@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { useAppSelector } from "../../../app/hooks";
+import { MouseEventHandler, useEffect, useRef, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { DateTime } from "luxon";
 import { socket } from "../../../SocketClient";
 import TypingDots from "./TypingDots";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserPlus } from "@fortawesome/free-solid-svg-icons/faUserPlus";
+import { addNewContact } from "../../../features/contact/contactSlice";
 
 interface PopulateMessageType {
   id: number | null;
@@ -10,9 +13,11 @@ interface PopulateMessageType {
   displayName: string | null;
   content: string | React.ReactNode;
   createdAt: string | null;
+  addContact: MouseEventHandler<SVGSVGElement> | null;
 }
 
 const Messages = () => {
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
   const contacts = useAppSelector((state) => state.contact.contacts);
   const messages = useAppSelector((state) => state.message.messages);
@@ -20,6 +25,7 @@ const Messages = () => {
   const [contactsTypingDisplayNames, setContactsTypingDisplayNames] = useState<
     string[]
   >([]);
+
   let newestMessage: boolean | null = null;
 
   const ref = useRef<HTMLDivElement>(null);
@@ -27,6 +33,8 @@ const Messages = () => {
   useEffect(() => {
     if (newestMessage && ref.current)
       ref.current?.scrollIntoView({ behavior: "smooth" });
+
+    setOthersAreTyping(false);
   }, [messages]);
 
   useEffect(() => {
@@ -55,8 +63,9 @@ const Messages = () => {
             displayName = `Unknown User ${unknownUsersCount}`;
           }
 
-            setContactsTypingDisplayNames((prev) => [...prev, displayName]
-            .filter((c, i, a) => c !== a[i - 1]));
+          setContactsTypingDisplayNames((prev) =>
+            [...prev, displayName].filter((c, i, a) => c !== a[i - 1])
+          );
 
           if (debounceTimer) {
             clearTimeout(debounceTimer);
@@ -70,12 +79,33 @@ const Messages = () => {
     }
   }, [socket.id]);
 
+  const addUnknownToContact = async (contactId) => {
+    try {
+      const action = await dispatch(addNewContact({ displayName }));
+
+      if (addNewContact.rejected.match(action)) {
+        const error = action.payload as { message?: string };
+
+        if (error && "message" in error) {
+          setErrMsg(error.message);
+          setWarningDialogIsOpen(true);
+          return;
+        }
+        console.error("An unknown error occurred.");
+        setErrMsg("An unknown error occurred.");
+      }
+    } catch (error) {
+      console.error("An error occurred while dispatching signInUser:", error);
+    }
+  };
+
   const populateMessage = ({
     id,
     isYours,
     displayName,
     content,
     createdAt,
+    addContact,
   }: PopulateMessageType) => {
     const today = DateTime.now().toFormat("D");
     const yesterday = DateTime.now().minus({ days: 1 }).toFormat("D");
@@ -103,7 +133,25 @@ const Messages = () => {
         className={`chat ${isYours ? "chat-end" : "chat-start"}`}
         ref={ref}
       >
-        {isYours ? null : <div className="chat-header">{displayName}</div>}
+        {isYours ? null : (
+          <div className="chat-header">
+            {displayName}
+            {displayName === "Unknown User" && (
+              <div className="tooltip" data-tip="Add Contact">
+                {" "}
+                <button>
+                  <FontAwesomeIcon
+                    icon={faUserPlus}
+                    className="w-3 h-3 ml-1"
+                    onClick={() => {
+                      if (addContact) addContact;
+                    }}
+                  />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         <div
           className={`chat-bubble px-2.5 py-1.5 min-h-min ${
             isYours ? "" : "chat-bubble-accent"
@@ -130,6 +178,7 @@ const Messages = () => {
             displayName: null,
             content: message.content,
             createdAt: message.created_at,
+            addContact: null,
           });
         }
 
@@ -140,6 +189,7 @@ const Messages = () => {
             displayName: "Unknown User",
             content: message.content,
             createdAt: message.created_at,
+            addContact: addUnknownToContact(message.sender_id),
           });
         }
 
@@ -153,6 +203,7 @@ const Messages = () => {
             displayName: contactDisplayName,
             content: message.content,
             createdAt: message.created_at,
+            addContact: null,
           });
         }
       })}
@@ -163,6 +214,7 @@ const Messages = () => {
           displayName: contactsTypingDisplayNames.join(", "),
           content: <TypingDots />,
           createdAt: null,
+          addContact: null,
         })}
     </>
   );
