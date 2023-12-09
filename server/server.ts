@@ -42,7 +42,6 @@ io.on("connection", (socket) => {
 
   // Send & receive messages
   socket.on("send_message", (data) => {
-    console.log("Sent data: ", data, data.chatroom_id);
     socket.to(data.chatroom_id.toString()).emit("receive_message", data);
   });
 
