@@ -1,11 +1,12 @@
+import { MouseEvent } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
-import { MouseEvent } from "react";
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
   const user = useAppSelector((state) => state.user.user);

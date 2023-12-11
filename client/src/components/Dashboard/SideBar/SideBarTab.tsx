@@ -3,11 +3,14 @@ import { setChatroomTabSelected } from "../../../features/chatroom/chatroomSlice
 import { setContactTabSelected } from "../../../features/contact/contactSlice";
 
 const SideBarTab = () => {
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const isChatroomSelected = useAppSelector(
     (state) => state.chatroom.isSelected
-  );
-  const isContactSelected = useAppSelector((state) => state.contact.isSelected);
+    );
+    const isContactSelected = useAppSelector((state) => state.contact.isSelected);
+    
+    // Local states & refs & variables
   const classes = "tab w-2/4 transition-all duration-300 ease-in-out transform";
 
   return (

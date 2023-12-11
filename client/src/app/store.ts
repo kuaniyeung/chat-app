@@ -4,6 +4,7 @@ import sessionReducer from "../features/session/sessionSlice";
 import chatroomReducer from "../features/chatroom/chatroomSlice";
 import contactReducer from "../features/contact/contactSlice";
 import messageReducer from "../features/message/messageSlice";
+import alertReducer from "../features/alert/alertSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     chatroom: chatroomReducer,
     contact: contactReducer,
     message: messageReducer,
+    alert: alertReducer
   },
 });
 

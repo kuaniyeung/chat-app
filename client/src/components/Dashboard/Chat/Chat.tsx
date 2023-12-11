@@ -6,9 +6,10 @@ import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { getMessagesByChatroom } from "../../../features/message/messageSlice";
 import { useEffect, useState } from "react";
 import Messages from "./Messages";
-import LoadingSpinner from "../../LoadingSpinner";
+import LoadingSpinner from "../../Reusable/LoadingSpinner";
 
 const Chat = () => {
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
   const selectedChatroom = useAppSelector(
@@ -16,6 +17,8 @@ const Chat = () => {
   );
   const messages = useAppSelector((state) => state.message.messages);
   const loading = useAppSelector((state) => state.message.loading);
+
+  // Local states
   const [initialFetch, setInitialFetch] = useState(false);
 
   const fetchMessages = async () => {
@@ -58,7 +61,6 @@ const Chat = () => {
             className="btn btn-circle btn-ghost"
             onClick={() => {
               dispatch(setSelectedChatroom(null));
-
             }}
           >
             <FontAwesomeIcon icon={faXmark} className="w-4 h-4" />
