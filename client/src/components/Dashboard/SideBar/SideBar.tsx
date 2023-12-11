@@ -7,11 +7,13 @@ import AddNewChatroomDialog from "./AddNewChatroomDialog";
 import AddNewContactDialog from "./AddNewContactDialog";
 
 const SideBar = () => {
+  // Global states in Redux
   const isChatroomSelected = useAppSelector(
     (state) => state.chatroom.isSelected
-  );
-  const isContactSelected = useAppSelector((state) => state.contact.isSelected);
-
+    );
+    const isContactSelected = useAppSelector((state) => state.contact.isSelected);
+    
+    // Local states & refs & variables
   const [showAddChatroom, setShowAddChatroom] = useState(false);
   const [showAddContact, setShowAddContact] = useState(false);
 

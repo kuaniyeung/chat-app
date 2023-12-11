@@ -3,17 +3,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { signInUser } from "../../features/user/userSlice";
-import LoadingSpinner from "../LoadingSpinner";
+import LoadingSpinner from "../Reusable/LoadingSpinner";
 import Dashboard from "../Dashboard/Dashboard";
-import WarningDialog from "../Dialogs/WarningDialog";
+import WarningDialog from "../Reusable/WarningDialog";
 
 const EMAIL_REGEX =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const Login = ({}) => {
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.user.loading);
 
+  // Local states & refs & variables
   const emailRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState("");

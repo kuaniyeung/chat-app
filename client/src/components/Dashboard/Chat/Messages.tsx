@@ -1,4 +1,4 @@
-import { MouseEventHandler, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { DateTime } from "luxon";
 import { socket } from "../../../SocketClient";
@@ -6,6 +6,7 @@ import TypingDots from "./TypingDots";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons/faUserPlus";
 import { addNewContact } from "../../../features/contact/contactSlice";
+import ConfirmationDialog from "../../Reusable/ConfirmationDialog";
 
 interface PopulateMessageType {
   id: number | null;
@@ -13,22 +14,28 @@ interface PopulateMessageType {
   displayName: string | null;
   content: string | React.ReactNode;
   createdAt: string | null;
-  addContact: MouseEventHandler<SVGSVGElement> | null;
+  contactDisplayName: string | null;
 }
 
 const Messages = () => {
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
   const contacts = useAppSelector((state) => state.contact.contacts);
   const messages = useAppSelector((state) => state.message.messages);
+
+  // Local states & refs & variables
   const [othersAreTyping, setOthersAreTyping] = useState(false);
   const [contactsTypingDisplayNames, setContactsTypingDisplayNames] = useState<
     string[]
   >([]);
-
-  let newestMessage: boolean | null = null;
-
+  const [unknownContactDisplayName, setUnknownContactDisplayName] = useState<
+    string | null
+  >(null);
+  const [confirmationDialogIsOpen, setConfirmationDialogIsOpen] =
+    useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  let newestMessage: boolean | null = null;
 
   useEffect(() => {
     if (newestMessage && ref.current)
@@ -79,24 +86,24 @@ const Messages = () => {
     }
   }, [socket.id]);
 
-  const addUnknownToContact = async (contactId) => {
+  const addUnknownToContact = async (contactDisplayName: string) => {
     try {
-      const action = await dispatch(addNewContact({ displayName }));
-
+      const action = await dispatch(
+        addNewContact({ displayName: contactDisplayName })
+      );
       if (addNewContact.rejected.match(action)) {
         const error = action.payload as { message?: string };
-
-        if (error && "message" in error) {
-          setErrMsg(error.message);
-          setWarningDialogIsOpen(true);
-          return;
-        }
-        console.error("An unknown error occurred.");
-        setErrMsg("An unknown error occurred.");
+        if (error && "message" in error) throw error;
       }
     } catch (error) {
-      console.error("An error occurred while dispatching signInUser:", error);
+      console.error(
+        "An error occurred while dispatching addNewContact:",
+        error
+      );
     }
+
+    setConfirmationDialogIsOpen(false);
+    return;
   };
 
   const populateMessage = ({
@@ -105,7 +112,7 @@ const Messages = () => {
     displayName,
     content,
     createdAt,
-    addContact,
+    contactDisplayName,
   }: PopulateMessageType) => {
     const today = DateTime.now().toFormat("D");
     const yesterday = DateTime.now().minus({ days: 1 }).toFormat("D");
@@ -138,15 +145,14 @@ const Messages = () => {
             {displayName}
             {displayName === "Unknown User" && (
               <div className="tooltip" data-tip="Add Contact">
-                {" "}
-                <button>
-                  <FontAwesomeIcon
-                    icon={faUserPlus}
-                    className="w-3 h-3 ml-1"
-                    onClick={() => {
-                      if (addContact) addContact;
-                    }}
-                  />
+                <button
+                  onClick={() => {
+                    if (contactDisplayName)
+                      setUnknownContactDisplayName(contactDisplayName);
+                    setConfirmationDialogIsOpen(true);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faUserPlus} className="w-3 h-3 ml-1" />
                 </button>
               </div>
             )}
@@ -171,42 +177,59 @@ const Messages = () => {
       <div className="grow invisible"></div>
       {messages.map((message, i) => {
         newestMessage = messages.length - 1 === i;
-        if (message.sender_id === user.id) {
+
+        // Messages from you
+        if (message.sender_display_name === user.display_name) {
           return populateMessage({
             id: i,
             isYours: true,
             displayName: null,
             content: message.content,
             createdAt: message.created_at,
-            addContact: null,
+            contactDisplayName: null,
           });
         }
 
-        if (contacts.some((contact) => contact.id !== message.sender_id)) {
+        // Mesasges from your contacts
+        if (
+          contacts.some(
+            (contact) => contact.display_name === message.sender_display_name
+          )
+        ) {
           return populateMessage({
             id: i,
             isYours: false,
-            displayName: "Unknown User",
+            displayName: message.sender_display_name,
             content: message.content,
             createdAt: message.created_at,
-            addContact: addUnknownToContact(message.sender_id),
+            contactDisplayName: null,
           });
         }
 
-        if (contacts.some((contact) => contact.id === message.sender_id)) {
-          const contactDisplayName = contacts.filter(
-            (contact) => contact.id === message.sender_id
-          )[0].display_name;
+        // Messages from deleted users
+        if (message.sender_display_name === null) {
           return populateMessage({
             id: i,
             isYours: false,
-            displayName: contactDisplayName,
+            displayName: "Deleted User",
             content: message.content,
             createdAt: message.created_at,
-            addContact: null,
+            contactDisplayName: null,
           });
         }
+
+        // Messages from unknown users
+        return populateMessage({
+          id: i,
+          isYours: false,
+          displayName: "Unknown User",
+          content: message.content,
+          createdAt: message.created_at,
+          contactDisplayName: message.sender_display_name,
+        });
       })}
+
+      {/* Typing Signal */}
       {othersAreTyping &&
         populateMessage({
           id: null,
@@ -214,8 +237,20 @@ const Messages = () => {
           displayName: contactsTypingDisplayNames.join(", "),
           content: <TypingDots />,
           createdAt: null,
-          addContact: null,
+          contactDisplayName: null,
         })}
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmationDialogIsOpen}
+        onConfirm={() => {
+          if (unknownContactDisplayName)
+            addUnknownToContact(unknownContactDisplayName);
+          setUnknownContactDisplayName(null);
+        }}
+        onCancel={() => setConfirmationDialogIsOpen(false)}
+        text={`Are you sure you want to add this person as a new contact?`}
+      />
     </>
   );
 };

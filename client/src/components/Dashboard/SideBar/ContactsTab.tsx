@@ -6,6 +6,7 @@ interface Props {
 }
 
 const ContactsTab: React.FC<Props> = ({ onClick }) => {
+  // Global states in Redux
   const contacts = useAppSelector((state) => state.contact.contacts);
 
   return (

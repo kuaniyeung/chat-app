@@ -10,20 +10,23 @@ import {
   getSession,
   retrieveSessionData,
 } from "./features/session/sessionSlice";
-import LoadingSpinner from "./components/LoadingSpinner";
-import { Contact } from "./features/contact/contactSlice";
+import LoadingSpinner from "./components/Reusable/LoadingSpinner";
+import { Contact, addNewContact } from "./features/contact/contactSlice";
 import { Chatroom } from "./features/chatroom/chatroomSlice";
 
 function App() {
-  const [showAddUser, setAddUser] = useState(false);
-  const [currentEventOnState, setCurrentEventOnState] = useState<string | null>(
-    null
-  );
+  // Global states in Redux
   const session = useAppSelector((state) => state.session.session);
   const user = useAppSelector((state) => state.user.user);
   const contacts = useAppSelector((state) => state.contact.contacts);
   const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
   const dispatch = useAppDispatch();
+
+  // Local states
+  const [showAddUser, setAddUser] = useState(false);
+  const [currentEventOnState, setCurrentEventOnState] = useState<string | null>(
+    null
+  );
 
   const setUserData = () => {
     if (Object.keys(user).length === 0 && session) {
@@ -101,132 +104,24 @@ function App() {
   // };
 
   //   const testing = async () => {
-  // const membersOfCurrentChatrooms = chatrooms.map(
-  //       (chatroom) => chatroom.members
-  //     );
-
-  //     const objectsEqual = (c1: Contact, c2: Contact): boolean => {
-  //       return c1.id === c2.id && c1.display_name === c2.display_name;
-  //     };
-
-  //     const arraysEqual = (a1: Contact[], a2: Contact[]) => {
-  //       const sortedA1 = [...a1].sort((o1, o2) => o1.id.localeCompare(o2.id));
-  //       const sortedA2 = [...a2].sort((o1, o2) => o1.id.localeCompare(o2.id));
-
-  //       return (
-  //         sortedA1.length === sortedA2.length &&
-  //         sortedA1.every((o, idx) => objectsEqual(o, sortedA2[idx]))
+  //     try {
+  //       const action = await dispatch(
+  //         addNewContact({ displayName: "NewUser" })
   //       );
-  //     };
-
-  //     // Validate if new chatroom exists
-
-  //     try {
-  //       const doesChatroomExist = membersOfCurrentChatrooms.some((chatroom) =>
-  //         arraysEqual(payload.members, chatroom)
-  //       );
-
-  //       if (doesChatroomExist) throw new Error("Chatroom already exists");
-  //     } catch (error) {
-  //       return console.error(error)
-  //     }
-
-  //     // Add new chatroom
-
-  //     let newChatroom: Chatroom = { id: null, name: "", members: [] };
-
-  //     try {
-  //       const { data, error } = await supabase
-  //         .from("chatrooms")
-  //         .insert([{ name: payload.name }])
-  //         .select("id, name");
-
-  //       if (error) throw error;
-
-  //       newChatroom = { ...newChatroom, id: data[0].id, name: data[0].name };
-  //     } catch (error) {
-  //        return console.error(error)
-  //     }
-
-  //     // Add new chatroom members
-
-  //     try {
-  //       const promises: Promise<Contact>[] = payload.members.map(async (member: any) => {
-  //         const { data, error } = await supabase
-  //           .from("chatrooms_members")
-  //           .insert([{ chatroom_id: newChatroom.id, member_id: member.id }])
-  //           .select("member_id, users!inner(display_name)");
-
-  //         console.log(data);
-
-  //         return {id: data?[0].member_id,
-  //         display_name: data?[0].users[0].display_name}
-  //       });
-
-  //             try {
-  //         newChatroom.members = await Promise.all(promises);
-  //       } catch (error) {
-  //          return console.error(error)
+  //       if (addNewContact.rejected.match(action)) {
+  //         const error = action.payload as { message?: string };
+  //         if (error && "message" in error) throw error;
   //       }
   //     } catch (error) {
-  //        return console.error(error)
+  //       console.error(
+  //         "An error occurred while dispatching addNewContact:",
+  //         error
+  //       );
   //     }
+  //     return;
   //   };
 
-  // const testing2 = async () => {
-  //   // Add new chatroom
-
-  //   let newChatroom: Chatroom = { id: null, name: "", members: [] };
-
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("chatrooms")
-  //       .insert([{ name: payload.name }])
-  //       .select("id, name");
-
-  //     if (error) throw error;
-
-  //     newChatroom = { ...newChatroom, id: data[0].id, name: data[0].name };
-  //   } catch (error) {
-  //     return console.error(error);
-  //   }
-
-  //   try {
-  //     const promises: Promise<
-  //       | {
-  //           member_id: any;
-  //           users: {
-  //             display_name: any;
-  //           }[];
-  //         }[]
-  //       | null
-  //     >[] = payload.members.map(async (member: any) => {
-  //       const { data, error } = await supabase
-  //         .from("chatrooms_members")
-  //         .insert([{ chatroom_id: newChatroom.id, member_id: member.id }]);
-
-  //       if (error) throw error;
-
-  //       return data;
-  //     });
-
-  //     try {
-  //       await Promise.all(promises);
-  //     } catch (error) {
-  //       return console.error(error);
-  //     }
-
-  //     newChatroom = { ...newChatroom, members: payload.members };
-  //     console.log(newChatroom);
-  //     return newChatroom;
-  //   } catch (error) {
-  //     return console.error(error);
-  //   }
-  // };
-
   // testing();
-
-  // testing2();
 
   // console.log(contacts);
 

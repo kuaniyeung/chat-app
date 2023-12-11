@@ -3,7 +3,7 @@ import { MouseEvent } from "react";
 interface ConfirmationDialogProps {
   isOpen: boolean;
   onCancel: (e: MouseEvent<HTMLButtonElement>) => void;
-  onConfirm: Function;
+  onConfirm: (() => void) | (() => Promise<void>);
   text: string;
 }
 

@@ -2,9 +2,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { useEffect, useRef, useState } from "react";
-import WarningDialog from "../../Dialogs/WarningDialog";
-import LoadingSpinner from "../../LoadingSpinner";
+import WarningDialog from "../../Reusable/WarningDialog";
+import LoadingSpinner from "../../Reusable/LoadingSpinner";
 import {
+  Message,
   addNewMessage,
   setNewMessage,
 } from "../../../features/message/messageSlice";
@@ -12,6 +13,7 @@ import { DateTime } from "luxon";
 import { socket } from "../../../SocketClient";
 
 const ChatForm = () => {
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.message.loading);
   const user = useAppSelector((state) => state.user.user);
@@ -19,12 +21,12 @@ const ChatForm = () => {
     (state) => state.chatroom.selectedChatroom
   );
 
-  const messageRef = useRef<HTMLInputElement | null>(null);
-
+  // Local states & refs
   const [message, setMessage] = useState("");
   const [errMsg, setErrMsg] = useState<string | undefined>("");
   const [warningDialogIsOpen, setWarningDialogIsOpen] =
     useState<boolean>(false);
+  const messageRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     messageRef.current?.focus();
@@ -35,36 +37,38 @@ const ChatForm = () => {
   }, [message]);
 
   useEffect(() => {
+    const handleNewMessage = (data: Message) => {
+      dispatch(
+        setNewMessage({
+          id: null,
+          sender_display_name: data.sender_display_name,
+          content: data.content,
+          chatroom_id: data.chatroom_id,
+          created_at: data.created_at,
+        })
+      );
+    };
+
     if (selectedChatroom) {
       socket.emit("join_room", selectedChatroom.id.toString());
-
-      socket.on("receive_message", (data) => {
-        dispatch(
-          setNewMessage({
-            id: null,
-            sender_id: data.sender_id,
-            content: data.content,
-            chatroom_id: data.chatroom_id,
-            created_at: data.created_at,
-          })
-        );
-      });
+      socket.on("receive_message", handleNewMessage);
     }
 
     return () => {
       if (selectedChatroom) {
         socket.emit("leave_room", selectedChatroom.id.toString());
+        socket.off("receive_message", handleNewMessage);
       }
     };
-  }, [socket.id]);
+  }, [socket.id, selectedChatroom]);
 
   const sendMessage = () => {
-    if (socket && selectedChatroom && user?.id) {
+    if (socket && selectedChatroom && user?.display_name) {
       socket.emit("send_message", {
         id: null,
         content: message,
         chatroom_id: selectedChatroom.id,
-        sender_id: user.id,
+        sender_display_name: user.display_name,
         created_at: DateTime.now().toISO(),
       });
     }
@@ -77,7 +81,7 @@ const ChatForm = () => {
         sender_id: user.id,
       });
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,22 +100,22 @@ const ChatForm = () => {
         console.error("An unknown error occurred.");
         setErrMsg("An unknown error occurred.");
       }
-
-      sendMessage();
-
-      dispatch(
-        setNewMessage({
-          id: null,
-          sender_id: user.id,
-          content: message,
-          chatroom_id: selectedChatroom?.id,
-          created_at: DateTime.now().toISO(),
-        })
-      );
-      setMessage("");
     } catch (error) {
       console.error("An error occurred while dispatching createUser:", error);
     }
+
+    sendMessage();
+
+    dispatch(
+      setNewMessage({
+        id: null,
+        sender_display_name: user.display_name,
+        content: message,
+        chatroom_id: selectedChatroom?.id,
+        created_at: DateTime.now().toISO(),
+      })
+    );
+    setMessage("");
   };
 
   return (

@@ -1,20 +1,35 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import SideBar from "./SideBar/SideBar";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
-import ConfirmationDialog from "../Dialogs/ConfirmationDialog";
+import { socket } from "../../SocketClient";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { setNewAlert } from "../../features/alert/alertSlice";
+import {
+  getChatrooms
+} from "../../features/chatroom/chatroomSlice";
+import {
+  getContacts
+} from "../../features/contact/contactSlice";
+import { Message } from "../../features/message/messageSlice";
 import { signOutUser } from "../../features/user/userSlice";
-import { getContacts } from "../../features/contact/contactSlice";
-import { getChatrooms } from "../../features/chatroom/chatroomSlice";
+import ConfirmationDialog from "../Reusable/ConfirmationDialog";
+import AlertList from "./AlertList";
 import Chat from "./Chat/Chat";
+import SideBar from "./SideBar/SideBar";
 
 const Dashboard = () => {
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const displayName = useAppSelector((state) => state.user.user.display_name);
   const selectedChatroom = useAppSelector(
     (state) => state.chatroom.selectedChatroom
   );
+  const user = useAppSelector((state) => state.user.user);
+  const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
+  const contacts = useAppSelector((state) => state.contact.contacts);
+  const alerts = useAppSelector((state) => state.alert.alerts);
+
+  // Local states & refs & variables
   const [confirmationDialogIsOpen, setConfirmationDialogIsOpen] =
     useState(false);
 
@@ -38,6 +53,70 @@ const Dashboard = () => {
     fetchContacts();
     fetchChatrooms();
   }, [displayName]);
+
+  useEffect(() => {
+    const handleNewMessage = (data: Message) => {
+      console.log(selectedChatroom?.id, data.chatroom_id);
+      if (selectedChatroom?.id === data.chatroom_id) return;
+      if (
+        chatrooms.some((chatroom) => chatroom.id === data.chatroom_id) === false
+      )
+        return;
+
+      dispatch(
+        setNewAlert({
+          id: Math.max(...alerts.map((alert) => alert.id)) + 1,
+          type: "newMessage",
+          data: {
+            newContact: null,
+            newMessage: {
+              chatroom: chatrooms.find(
+                (chatroom) => chatroom.id === data.chatroom_id
+              ),
+              message: {
+                id: null,
+                sender_display_name: data.sender_display_name,
+                content: data.content,
+                chatroom_id: data.chatroom_id,
+                created_at: data.created_at,
+              },
+            },
+          },
+        })
+      );
+    };
+
+    const handleNewContact = (data: {
+      contact_display_name: string;
+      sender_id: string;
+      sender_display_name: string;
+    }) => {
+      console.log("added contact");
+      if (user.display_name !== data.contact_display_name) return;
+
+      dispatch(
+        setNewAlert({
+          id: Math.max(...alerts.map((alert) => alert.id)) + 1,
+          type: "newContact",
+          data: {
+            newContact: {
+              id: data.sender_id,
+              display_name: data.sender_display_name,
+            },
+            newMessage: null,
+          },
+        })
+      );
+    };
+
+    socket.on("global_new_message", handleNewMessage);
+    socket.on("receive_new_contact", handleNewContact);
+
+    return () => {
+      socket.off("global_new_message", handleNewMessage);
+      socket.off("receive_new_contact", handleNewContact);
+    };
+  }, [socket.id, selectedChatroom, chatrooms, contacts]);
 
   const handleConfirmLogOut = async () => {
     try {
@@ -96,6 +175,9 @@ const Dashboard = () => {
 
       {/* Chat */}
       {selectedChatroom && <Chat />}
+
+      {/* Alerts */}
+      <AlertList />
     </>
   );
 };

@@ -3,11 +3,7 @@ import express, { Express, Request, Response } from "express";
 import { createServer } from "node:http";
 import cors from "cors";
 import "dotenv/config";
-import {
-  Message,
-  ClientToServerEvents,
-  ServerToClientEvents,
-} from "./interfaces";
+import { ClientToServerEvents, ServerToClientEvents } from "./interfaces";
 
 const app: Express = express();
 app.use(cors());
@@ -43,10 +39,17 @@ io.on("connection", (socket) => {
   // Send & receive messages
   socket.on("send_message", (data) => {
     socket.to(data.chatroom_id.toString()).emit("receive_message", data);
+
+    socket.broadcast.emit("global_new_message", data);
   });
 
   // Send & receive typing signal
   socket.on("send_typing", (data) => {
     socket.to(data.chatroom_id).emit("receive_typing", data);
+  });
+
+  // Send new contact
+  socket.on("send_new_contact", (data) => {
+    socket.broadcast.emit("receive_new_contact", data);
   });
 });

@@ -5,7 +5,7 @@ import { supabase } from "../../SupabasePlugin";
 export interface Message {
   id: number | null;
   content: string;
-  sender_id: string;
+  sender_display_name: string;
   chatroom_id: number;
   created_at: string;
 }
@@ -35,7 +35,7 @@ export const getMessagesByChatroom = createAsyncThunk(
     try {
       const { data: messages, error } = await supabase
         .from("messages")
-        .select("id, content, sender_id, chatroom_id, created_at")
+        .select("id, content, sender_display_name, chatroom_id, created_at")
         .eq("chatroom_id", currentSelectedChatroom?.id)
         .order("created_at", { ascending: true });
 
@@ -58,15 +58,13 @@ export const addNewMessage = createAsyncThunk(
     try {
       if (!currentSelectedChatroom) throw new Error("Select a chatroom.");
       
-      const { error } = await supabase
-        .from("messages")
-        .insert([
-          {
-            content: payload.content,
-            sender_id: currentUser.id,
-            chatroom_id: currentSelectedChatroom.id,
-          },
-        ])
+      const { error } = await supabase.from("messages").insert([
+        {
+          content: payload.content,
+          sender_display_name: currentUser.display_name,
+          chatroom_id: currentSelectedChatroom.id,
+        },
+      ]);
 
       if (error) throw error;
 

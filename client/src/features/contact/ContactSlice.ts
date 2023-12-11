@@ -127,6 +127,9 @@ export const contactSlice = createSlice({
   name: "contact",
   initialState,
   reducers: {
+    setNewContact: (state, action) => {
+      state.contacts = [...state.contacts, action.payload];
+    },
     setContactTabSelected: (state, action) => {
       state.isSelected = action.payload;
     },
@@ -166,4 +169,4 @@ export const contactSlice = createSlice({
 });
 
 export default contactSlice.reducer;
-export const { setContactTabSelected } = contactSlice.actions;
+export const { setNewContact, setContactTabSelected } = contactSlice.actions;

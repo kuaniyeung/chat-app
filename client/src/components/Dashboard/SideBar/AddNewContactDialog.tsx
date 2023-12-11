@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { addNewContact } from "../../../features/contact/contactSlice";
-import WarningDialog from "../../Dialogs/WarningDialog";
-import LoadingSpinner from "../../LoadingSpinner";
+import WarningDialog from "../../Reusable/WarningDialog";
+import LoadingSpinner from "../../Reusable/LoadingSpinner";
+import { socket } from "../../../SocketClient";
 
 interface Props {
   isAddContactOpen: boolean;
@@ -13,20 +14,30 @@ const AddNewContactDialog: React.FC<Props> = ({
   isAddContactOpen,
   closeAdd,
 }) => {
-  // States from store
+  // Global states in Redux
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.contact.loading);
+  const user = useAppSelector((state) => state.user.user);
 
-  // Local states
+  // Local states & refs & variables
   const displayNameRef = useRef<HTMLInputElement | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [errMsg, setErrMsg] = useState<string | undefined>("");
-  const [warningDialogIsOpen, setWarningDialogIsOpen] =
-    useState<boolean>(false);
+  const [warningDialogIsOpen, setWarningDialogIsOpen] = useState(false);
 
   useEffect(() => {
     displayNameRef.current?.focus();
   }, []);
+
+  const sendNewContactSignal = () => {
+    if (socket && displayName && user.display_name && user.id) {
+      socket.emit("send_new_contact", {
+        contact_display_name: displayName,
+        sender_display_name: user.display_name,
+        sender_id: user.id,
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,9 +57,12 @@ const AddNewContactDialog: React.FC<Props> = ({
         setErrMsg("An unknown error occurred.");
       }
     } catch (error) {
-      console.error("An error occurred while dispatching signInUser:", error);
+      console.error(
+        "An error occurred while dispatching addNewContact:",
+        error
+      );
     }
-
+    sendNewContactSignal();
     setDisplayName("");
     closeAdd();
   };
