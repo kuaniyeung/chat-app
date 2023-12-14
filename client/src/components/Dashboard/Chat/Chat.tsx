@@ -54,7 +54,7 @@ const Chat = () => {
         <div className="flex flex-none justify-between">
           {/* Chatroom name */}
 
-          <h1 className="self-center p-3">{getChatroomName()}</h1>
+          <h1 className="self-center p-3 text-neutral">{getChatroomName()}</h1>
 
           {/* Close button */}
           <button
@@ -69,7 +69,11 @@ const Chat = () => {
 
         {/* Chat Messages */}
         <div className="flex flex-col grow overflow-auto h-full">
-          {!Object.keys(messages).length && <h1>No messages in this chat</h1>}
+          {!Object.keys(messages).length && (
+            <h1 className="m-4 text-base-300 text-center">
+              No messages in this chat
+            </h1>
+          )}
 
           {initialFetch && loading ? (
             <LoadingSpinner size={"lg"} colour={"neutral-content"} />

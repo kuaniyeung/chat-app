@@ -115,7 +115,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
       {success ? (
         <Dashboard />
       ) : (
-        <div className="fixed top-0 left-0 right-0 w-full h-full bg-base-300">
+        <div className="fixed top-0 left-0 right-0 w-full h-full bg-base-200">
           <WarningDialog
             isOpen={warningDialogIsOpen}
             onConfirm={() => {
@@ -295,10 +295,13 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
                 password input field.
               </p>
             </div>
+
+            {/* Enter or Cancel */}
+
             {loading ? (
               <button
                 type="submit"
-                className="btn btn-secondary form-control w-full max-w-xs my-3"
+                className="btn btn-accent form-control w-full max-w-xs my-3 mt-5"
                 disabled={!validPassword || !validMatch ? true : false}
               >
                 <LoadingSpinner size={"md"} colour={"neutral-content"} />
@@ -306,14 +309,14 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
             ) : (
               <button
                 type="submit"
-                className="btn btn-secondary form-control w-full max-w-xs my-3"
+                className="btn btn-accent disabled:btn-accent disabled:opacity-30 form-control w-full max-w-xs my-3 mt-5"
                 disabled={!validPassword || !validMatch ? true : false}
               >
                 Create User
               </button>
             )}
             <button
-              className="btn btn-outline form-control w-full max-w-xs"
+              className="btn bg-base-300 form-control w-full max-w-xs"
               onClick={(e) => closeAdd(e)}
             >
               Cancel

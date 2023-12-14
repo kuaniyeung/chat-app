@@ -69,7 +69,7 @@ export const getChatrooms = createAsyncThunk(
         const { data } = await supabase
           .from("chatrooms_members")
           .select("member_id, users!inner(display_name)")
-          .eq("chatroom_id", chatroom.id);
+          .eq("chatroom_id", chatroom.id)
 
         return {
           id: chatroom.id,
@@ -81,11 +81,7 @@ export const getChatrooms = createAsyncThunk(
         };
       });
 
-      try {
         chatrooms = await Promise.all(promises);
-      } catch (error) {
-        return rejectWithValue(error as Error);
-      }
 
       return chatrooms as Chatroom[];
     } catch (error) {

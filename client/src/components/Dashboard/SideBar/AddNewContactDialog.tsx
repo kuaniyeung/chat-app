@@ -62,6 +62,7 @@ const AddNewContactDialog: React.FC<Props> = ({
         error
       );
     }
+
     sendNewContactSignal();
     setDisplayName("");
     closeAdd();
@@ -71,11 +72,9 @@ const AddNewContactDialog: React.FC<Props> = ({
     <>
       <dialog
         id="my_modal_5"
-        className={`modal sm:modal-middle ${
-          isAddContactOpen ? "modal-open" : ""
-        }`}
+        className={`modal ${isAddContactOpen ? "modal-open" : ""}`}
       >
-        <div className="modal-box form-control w-full max-w-xs">
+        <div className="modal-box form-control w-full max-w-sm">
           <WarningDialog
             isOpen={warningDialogIsOpen}
             onConfirm={() => {
@@ -96,7 +95,7 @@ const AddNewContactDialog: React.FC<Props> = ({
               <input
                 type="text"
                 ref={displayNameRef}
-                placeholder="Enter registered display name"
+                placeholder="Registered display name"
                 onChange={(e) => setDisplayName(e.target.value)}
                 value={displayName}
                 autoComplete="off"
@@ -122,7 +121,7 @@ const AddNewContactDialog: React.FC<Props> = ({
             )}
           </form>
           <button
-            className="btn btn-outline form-control w-full max-w-xs mt-4"
+            className="btn bg-base-300 form-control w-full max-w-xs mt-4"
             onClick={(e) => closeAdd(e)}
           >
             Cancel

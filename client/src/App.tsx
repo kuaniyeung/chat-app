@@ -103,25 +103,21 @@ function App() {
   //   ],
   // };
 
-  //   const testing = async () => {
-  //     try {
-  //       const action = await dispatch(
-  //         addNewContact({ displayName: "NewUser" })
-  //       );
-  //       if (addNewContact.rejected.match(action)) {
-  //         const error = action.payload as { message?: string };
-  //         if (error && "message" in error) throw error;
-  //       }
-  //     } catch (error) {
-  //       console.error(
-  //         "An error occurred while dispatching addNewContact:",
-  //         error
-  //       );
-  //     }
-  //     return;
-  //   };
+  const testing = async () => {
+    try {
+      const { data } = await supabase
+        .from("chatrooms_members")
+        .select("member_id, users!inner(display_name)")
+        .or("member_id.eq.null")
+        .eq("chatroom_id", 38)
 
-  // testing();
+        console.log(data);
+    } catch (error) {
+      return console.error(error);
+    }
+  };
+
+// testing();
 
   // console.log(contacts);
 
