@@ -16,10 +16,10 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   return (
     <div className={`modal ${isOpen ? "modal-open" : ""}`}>
       <div className="modal-box">
-        <p className="mb-4 text-info">{text}</p>
+        <p className="mb-4 text-neutral">{text}</p>
         <div className="modal-action">
           <button
-            className="btn btn-info mr-2"
+            className="btn btn-neutral mr-2 text-neutral-content"
             onClick={(e) => {
               onConfirm();
               onCancel(e);
@@ -27,7 +27,10 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           >
             Confirm
           </button>
-          <button className="btn btn-base-300" onClick={onCancel}>
+          <button
+            className="btn btn-base-300 text-neutral-content"
+            onClick={onCancel}
+          >
             Cancel
           </button>
         </div>

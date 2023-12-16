@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { addNewChatroom } from "../../../features/chatroom/chatroomSlice";
+import {
+  addNewChatroom,
+  setSelectedChatroom,
+} from "../../../features/chatroom/chatroomSlice";
 import WarningDialog from "../../Reusable/WarningDialog";
 import LoadingSpinner from "../../Reusable/LoadingSpinner";
 import { Contact } from "../../../features/contact/contactSlice";
@@ -17,12 +20,10 @@ const AddNewChatroomDialog: React.FC<Props> = ({
   // Global states in Redux
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
-  const userAsContact: Contact | undefined = user.id
-    ? {
-        id: user.id,
-        display_name: user.display_name || "",
-      }
-    : undefined;
+  const userAsContact: Contact = {
+    id: user!.id!,
+    display_name: user!.display_name!,
+  };
   const contacts = useAppSelector((state) => state.contact.contacts);
   const loading = useAppSelector((state) => state.chatroom.loading);
 
@@ -56,11 +57,12 @@ const AddNewChatroomDialog: React.FC<Props> = ({
     if (userAsContact) {
       selectedContacts = [...selectedContacts, userAsContact];
     }
-
     try {
       const action = await dispatch(
         addNewChatroom({ name, members: selectedContacts })
       );
+
+      dispatch(setSelectedChatroom(action.payload));
 
       if (addNewChatroom.rejected.match(action)) {
         const error = action.payload as { message?: string };
@@ -73,8 +75,13 @@ const AddNewChatroomDialog: React.FC<Props> = ({
         console.error("An unknown error occurred.");
         setErrMsg("An unknown error occurred.");
       }
+
+      console.log(action);
     } catch (error) {
-      console.error("An error occurred while dispatching signInUser:", error);
+      console.error(
+        "An error occurred while dispatching addNewChatroom:",
+        error
+      );
     }
 
     setName("");
@@ -86,11 +93,9 @@ const AddNewChatroomDialog: React.FC<Props> = ({
     <>
       <dialog
         id="my_modal_5"
-        className={`modal sm:modal-middle ${
-          isAddChatroomOpen ? "modal-open" : ""
-        }`}
+        className={`modal ${isAddChatroomOpen ? "modal-open" : ""}`}
       >
-        <div className="modal-box form-control w-full max-w-xs">
+        <div className="modal-box form-control w-full max-w-sm">
           <WarningDialog
             isOpen={warningDialogIsOpen}
             onConfirm={() => {
@@ -120,7 +125,7 @@ const AddNewChatroomDialog: React.FC<Props> = ({
             </div>
 
             {contacts.map((contact) => (
-              <div key={contact.id} className="mb-4">
+              <div key={contact.id} className="mt-4 mx-4">
                 <label className="inline-flex items-center">
                   <input
                     type="checkbox"
@@ -138,21 +143,21 @@ const AddNewChatroomDialog: React.FC<Props> = ({
             {loading ? (
               <button
                 type="submit"
-                className="btn btn-primary w-full max-w-xs mt-6"
+                className="btn btn-primary w-full max-w-xs mt-4"
               >
                 <LoadingSpinner size={"md"} colour={"neutral-content"} />
               </button>
             ) : (
               <button
                 type="submit"
-                className="btn btn-primary w-full max-w-xs mt-6"
+                className="btn btn-primary w-full max-w-xs mt-4"
               >
                 Create New Chatroom
               </button>
             )}
           </form>
           <button
-            className="btn btn-outline form-control w-full max-w-xs mt-4"
+            className="btn bg-base-300 form-control w-full max-w-xs mt-4"
             onClick={(e) => {
               setSelectedContactsIds([]);
               closeAdd(e);

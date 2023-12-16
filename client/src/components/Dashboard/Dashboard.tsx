@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { socket } from "../../SocketClient";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setNewAlert } from "../../features/alert/alertSlice";
+import { getChatrooms } from "../../features/chatroom/chatroomSlice";
+import { getContacts } from "../../features/contact/contactSlice";
 import {
-  getChatrooms
-} from "../../features/chatroom/chatroomSlice";
-import {
-  getContacts
-} from "../../features/contact/contactSlice";
-import { Message } from "../../features/message/messageSlice";
+  Message,
+  getLastMessagesByChatroom,
+} from "../../features/message/messageSlice";
 import { signOutUser } from "../../features/user/userSlice";
 import ConfirmationDialog from "../Reusable/ConfirmationDialog";
 import AlertList from "./AlertList";
@@ -45,7 +44,18 @@ const Dashboard = () => {
     try {
       await dispatch(getChatrooms()).unwrap();
     } catch (error) {
-      console.error("An error occurred while dispatching getContacts:", error);
+      console.error("An error occurred while dispatching getChatrooms:", error);
+    }
+  };
+
+  const fetchLastMessages = async () => {
+    try {
+      await dispatch(getLastMessagesByChatroom()).unwrap();
+    } catch (error) {
+      console.error(
+        "An error occurred while dispatching getLastMessagesByChatroom:",
+        error
+      );
     }
   };
 
@@ -53,6 +63,10 @@ const Dashboard = () => {
     fetchContacts();
     fetchChatrooms();
   }, [displayName]);
+
+  useEffect(() => {
+    fetchLastMessages();
+  }, [chatrooms]);
 
   useEffect(() => {
     const handleNewMessage = (data: Message) => {
@@ -140,22 +154,25 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="flex justify-between">
-        <h1>Welcome back {displayName}</h1>
+      <div className="flex justify-between bg-accent items-center">
+        <h1 className="p-3 px-6 text-accent-content text-lg">
+          <span className="text-xs uppercase">Welcome back </span>
+          <span className="font-bold ml-1">{displayName}</span>
+        </h1>
         <div className="dropdown dropdown-end">
-          <label tabIndex={0} className="btn btn-sm btn-circle btn-ghost">
+          <label tabIndex={0} className="btn btn-md btn-circle btn-ghost">
             <FontAwesomeIcon icon={faEllipsisVertical} />
           </label>
           <ul
             tabIndex={0}
-            className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-max"
+            className="dropdown-content z-[1] menu p-2 shadow rounded-xl bg-base-100 w-max"
           >
             <li>
               <a
                 onClick={() => {
                   setConfirmationDialogIsOpen(true);
                 }}
-                className="text-primary"
+                className="text-neutral rounded-xl p-2"
               >
                 Sign Out
               </a>

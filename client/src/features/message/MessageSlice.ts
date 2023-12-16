@@ -13,6 +13,7 @@ export interface Message {
 interface InitialState {
   loading: boolean;
   messages: Message[];
+  lastMessages: [number, string | null, string][];
   error: string;
 }
 
@@ -23,6 +24,7 @@ interface AddMessagePayload {
 const initialState: InitialState = {
   loading: false,
   messages: [],
+  lastMessages: [],
   error: "",
 };
 
@@ -48,6 +50,42 @@ export const getMessagesByChatroom = createAsyncThunk(
   }
 );
 
+export const getLastMessagesByChatroom = createAsyncThunk(
+  "messages/getLastMessagesByChatroom",
+  async (_, { rejectWithValue, getState }) => {
+    const currentState: RootState = getState() as RootState;
+    const currentChatrooms = currentState.chatroom.chatrooms;
+
+    try {
+      const promises = currentChatrooms.map(async (chatroom) => {
+        const { data: messages, error } = await supabase
+          .from("messages")
+          .select("content, sender_display_name")
+          .eq("chatroom_id", chatroom.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        const result: [number, string | null, string] = [
+          chatroom.id,
+          messages?.sender_display_name,
+          messages?.content,
+        ];
+
+        return result;
+      });
+
+      const lastMessages = await Promise.all(promises);
+
+      return lastMessages;
+    } catch (error) {
+      return rejectWithValue(error as Error);
+    }
+  }
+);
+
 export const addNewMessage = createAsyncThunk(
   "messages/addNewMessage",
   async (payload: AddMessagePayload, { rejectWithValue, getState }) => {
@@ -57,7 +95,7 @@ export const addNewMessage = createAsyncThunk(
 
     try {
       if (!currentSelectedChatroom) throw new Error("Select a chatroom.");
-      
+
       const { error } = await supabase.from("messages").insert([
         {
           content: payload.content,
@@ -68,7 +106,7 @@ export const addNewMessage = createAsyncThunk(
 
       if (error) throw error;
 
-      return
+      return;
     } catch (error) {
       return rejectWithValue(error as Error);
     }
@@ -99,16 +137,27 @@ export const messageSlice = createSlice({
       state.loading = false;
       state.error = action.error.message || "Something went wrong";
     });
-    builder.addCase(addNewMessage.pending, (state) => {
+    builder.addCase(getLastMessagesByChatroom.pending, (state) => {
       state.loading = true;
     });
     builder.addCase(
-      addNewMessage.fulfilled,
-      (state) => {
-        (state.loading = false),
-          (state.error = "");
+      getLastMessagesByChatroom.fulfilled,
+      (state, action: PayloadAction<[number, string | null, string][]>) => {
+        state.loading = false;
+        state.lastMessages = action.payload;
+        state.error = "";
       }
     );
+    builder.addCase(getLastMessagesByChatroom.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message || "Something went wrong";
+    });
+    builder.addCase(addNewMessage.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(addNewMessage.fulfilled, (state) => {
+      (state.loading = false), (state.error = "");
+    });
     builder.addCase(addNewMessage.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message || "Something went wrong";

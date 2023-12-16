@@ -120,7 +120,7 @@ const Login = ({}) => {
               </p>
             </div>
             <div>
-              <label htmlFor="password" className="label">
+              <label htmlFor="password" className="label mt-3">
                 <span className="label-text">Password</span>
               </label>
               <input

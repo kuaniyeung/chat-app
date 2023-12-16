@@ -160,13 +160,13 @@ const Messages = () => {
         )}
         <div
           className={`chat-bubble px-2.5 py-1.5 min-h-min ${
-            isYours ? "" : "chat-bubble-accent"
+            isYours ? "bg-base-300" : "chat-bubble-accent"
           }`}
         >
           {content}
         </div>
-        <div className="chat-footer opacity-50">
-          <time className="text-xs opacity-50">{displayCreatedAt}</time>
+        <div className="chat-footer opacity-75">
+          <time className="text-xs opacity-75">{displayCreatedAt}</time>
         </div>
       </div>
     );

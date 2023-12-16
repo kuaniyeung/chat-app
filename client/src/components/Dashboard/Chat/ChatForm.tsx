@@ -119,7 +119,7 @@ const ChatForm = () => {
   };
 
   return (
-    <div className="w-full flex-auto">
+    <div className="w-full flex-auto mt-3">
       <WarningDialog
         isOpen={warningDialogIsOpen}
         onConfirm={() => {
@@ -144,12 +144,12 @@ const ChatForm = () => {
           value={message}
           autoComplete="off"
           required
-          className="input input-bordered input-primary w-full max-w-xs mr-1"
+          className="input input-bordered input-primary w-full mr-1"
         />
 
         <button
           type="submit"
-          className="btn btn-circle btn-primary"
+          className="btn btn-circle btn-primary disabled:btn-primary disabled:opacity-30 ml-1"
           disabled={message === "" ? true : false}
         >
           {loading ? (
