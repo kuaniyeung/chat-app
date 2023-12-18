@@ -122,7 +122,10 @@ const AddNewContactDialog: React.FC<Props> = ({
           </form>
           <button
             className="btn bg-base-300 form-control w-full max-w-xs mt-4"
-            onClick={(e) => closeAdd(e)}
+            onClick={(e) => {
+              setDisplayName("");
+              closeAdd(e);
+            }}
           >
             Cancel
           </button>

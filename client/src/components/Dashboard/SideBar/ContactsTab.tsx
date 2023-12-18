@@ -3,10 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MouseEvent } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import {
+  Chatroom,
   addNewChatroom,
   setSelectedChatroom,
 } from "../../../features/chatroom/chatroomSlice";
 import { Contact } from "../../../features/contact/contactSlice";
+import { socket } from "../../../SocketClient";
 
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -23,6 +25,12 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
 
   const contacts = useAppSelector((state) => state.contact.contacts);
   const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
+
+    const sendNewChatroom = (newChatroom: Chatroom) => {
+      if (socket && user?.display_name) {
+        socket.emit("send_new_chatroom", newChatroom);
+      }
+    };
 
   const handleOpenChat = async (contact: Contact) => {
     const membersIds = [user.id, contact.id];
@@ -51,6 +59,7 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
         );
 
         dispatch(setSelectedChatroom(action.payload));
+        sendNewChatroom(action.payload as Chatroom);
 
         if (addNewChatroom.rejected.match(action)) {
           const error = action.payload as { message?: string };
@@ -70,8 +79,8 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
 
   return (
     <>
-      <h1 className="text-secondary text-center p-3 uppercase text-sm italic text-primary bg-base-200 flex justify-center items-center">
-        <span className="">Your Contacts</span>
+      <h1 className="text-secondary text-center p-3 uppercase text-sm italic bg-base-200 flex justify-center items-center">
+        <span>Your Contacts</span>
 
         <button
           className="btn btn-sm btn-primary px-2 fixed right-2 bg-secondary"

@@ -1,12 +1,12 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import ChatForm from "./ChatForm";
-import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { getMessagesByChatroom } from "../../../features/message/messageSlice";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
-import Messages from "./Messages";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
+import { getMessagesByChatroom } from "../../../features/message/messageSlice";
 import LoadingSpinner from "../../Reusable/LoadingSpinner";
+import ChatForm from "./ChatForm";
+import Messages from "./Messages";
 
 const Chat = () => {
   // Global states in Redux
@@ -35,7 +35,7 @@ const Chat = () => {
 
   const getChatroomName = () => {
     if (selectedChatroom?.name === "")
-      return `You, ${selectedChatroom.members
+      return `${selectedChatroom.members
         .filter((member) => member.id !== user.id)
         .map((member) => member.display_name)
         .join(", ")}`;
@@ -76,7 +76,9 @@ const Chat = () => {
           )}
 
           {initialFetch && loading ? (
-            <LoadingSpinner size={"lg"} colour={"neutral-content"} />
+            <div className="fixed h-full w-full flex justify-center items-center">
+              <LoadingSpinner size={"lg"} colour={"neutral-content"} />
+            </div>
           ) : (
             <Messages />
           )}

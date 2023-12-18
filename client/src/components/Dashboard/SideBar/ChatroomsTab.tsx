@@ -1,8 +1,10 @@
+import { faPlus, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MouseEvent } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import {
+  setSelectedChatroom
+} from "../../../features/chatroom/chatroomSlice";
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -18,7 +20,7 @@ const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
   return (
     <>
       <h1 className="text-center p-3 uppercase text-sm italic text-primary bg-base-200 flex justify-center items-center">
-        <span className="">Your Chatrooms</span>
+        <span>Your Chatrooms</span>
 
         <button
           className="btn btn-sm btn-primary px-2 fixed right-2"
@@ -29,7 +31,9 @@ const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
       </h1>
 
       {/* If no chatrooms added: */}
-      {!Object.keys(chatrooms).length && <h1 className="m-4 text-base-300 text-center">No Saved Chatrooms</h1>}
+      {!Object.keys(chatrooms).length && (
+        <h1 className="m-4 text-base-300 text-center">No Saved Chatrooms</h1>
+      )}
 
       {/* List out existing chatrooms: */}
       {chatrooms.map((chatroom) => {
@@ -39,7 +43,7 @@ const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
         const twoPeopleChat = chatroom.members.length === 2;
 
         if (chatroom.name === "")
-          chatroomName = `You, ${chatroom.members
+          chatroomName = `${chatroom.members
             .filter((member) => member.id !== user.id)
             .map((member) => member.display_name)
             .join(", ")}`;
@@ -56,8 +60,9 @@ const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
           else if (
             contacts.some((contact) => contact.display_name === lastMessage[1])
           )
-            senderDisplay = "Unknown User";
+            senderDisplay = lastMessage[1];
           else if (!lastMessage[1] && !lastMessage[2]) empty = true;
+          else senderDisplay = "Unknown User";
         }
 
         return (

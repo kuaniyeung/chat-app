@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { socket } from "../../SocketClient";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setNewAlert } from "../../features/alert/alertSlice";
-import { getChatrooms } from "../../features/chatroom/chatroomSlice";
+import {
+  Chatroom,
+  getChatrooms,
+  setNewChatroom,
+} from "../../features/chatroom/chatroomSlice";
 import { getContacts } from "../../features/contact/contactSlice";
 import {
   Message,
@@ -62,15 +66,22 @@ const Dashboard = () => {
   useEffect(() => {
     fetchContacts();
     fetchChatrooms();
-  }, [displayName]);
+  }, [displayName, selectedChatroom]);
 
   useEffect(() => {
     fetchLastMessages();
   }, [chatrooms]);
 
   useEffect(() => {
+    const handleNewChatroom = (data: Chatroom) => {
+      if (data.members.some((member) => member.id === user.id) === false)
+        return;
+
+      dispatch(setNewChatroom(data));
+      fetchChatrooms()
+    };
+
     const handleNewMessage = (data: Message) => {
-      console.log(selectedChatroom?.id, data.chatroom_id);
       if (selectedChatroom?.id === data.chatroom_id) return;
       if (
         chatrooms.some((chatroom) => chatroom.id === data.chatroom_id) === false
@@ -123,10 +134,12 @@ const Dashboard = () => {
       );
     };
 
+    socket.on("global_receive_new_chatroom", handleNewChatroom);
     socket.on("global_new_message", handleNewMessage);
     socket.on("receive_new_contact", handleNewContact);
 
     return () => {
+      socket.off("global_receive_new_chatroom", handleNewChatroom);
       socket.off("global_new_message", handleNewMessage);
       socket.off("receive_new_contact", handleNewContact);
     };

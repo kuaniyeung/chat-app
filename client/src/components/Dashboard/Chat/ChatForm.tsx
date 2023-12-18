@@ -1,16 +1,16 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { DateTime } from "luxon";
 import { useEffect, useRef, useState } from "react";
-import WarningDialog from "../../Reusable/WarningDialog";
-import LoadingSpinner from "../../Reusable/LoadingSpinner";
+import { socket } from "../../../SocketClient";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import {
   Message,
   addNewMessage,
   setNewMessage,
 } from "../../../features/message/messageSlice";
-import { DateTime } from "luxon";
-import { socket } from "../../../SocketClient";
+import LoadingSpinner from "../../Reusable/LoadingSpinner";
+import WarningDialog from "../../Reusable/WarningDialog";
 
 const ChatForm = () => {
   // Global states in Redux
