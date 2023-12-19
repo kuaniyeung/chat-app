@@ -1,10 +1,11 @@
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { signInUser } from "../../features/user/userSlice";
-import LoadingSpinner from "../Reusable/LoadingSpinner";
 import Dashboard from "../Dashboard/Dashboard";
+import LoadingSpinner from "../Reusable/LoadingSpinner";
 import WarningDialog from "../Reusable/WarningDialog";
 
 const EMAIL_REGEX =
@@ -16,6 +17,7 @@ const Login = ({}) => {
   const loading = useAppSelector((state) => state.user.loading);
 
   // Local states & refs & variables
+  const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState("");
@@ -72,6 +74,7 @@ const Login = ({}) => {
     setSuccess(true);
     setEmail("");
     setPassword("");
+    navigate("/")
   };
   return (
     <>

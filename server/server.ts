@@ -43,6 +43,11 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("global_new_message", data);
   });
 
+  // Send & receive new added chatrooms
+    socket.on("send_new_chatroom", (data) => {
+      socket.broadcast.emit("global_receive_new_chatroom", data);
+    });
+
   // Send & receive typing signal
   socket.on("send_typing", (data) => {
     socket.to(data.chatroom_id).emit("receive_typing", data);

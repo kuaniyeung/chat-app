@@ -1,11 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import Login from "./Login";
-import { MouseEvent } from "react";
 
-interface Props {
-  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
-}
+const SignInPage = () => {
+const navigate = useNavigate();
 
-const SignInPage: React.FC<Props> = ({onClick}) => {
   return (
     <div className="flex flex-col w-full">
       <div className="grid card rounded-box place-items-center">
@@ -15,7 +13,7 @@ const SignInPage: React.FC<Props> = ({onClick}) => {
       <div className="grid card rounded-box place-items-center">
         <button
           className="btn btn-secondary w-full max-w-xs"
-          onClick={onClick}
+          onClick={() => navigate("/signup")}
         >
           Create New User
         </button>

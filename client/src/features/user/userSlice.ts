@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction, SerializedError } from "@reduxjs/toolkit";
 import { supabase } from "../../SupabasePlugin";
 import { Session } from "@supabase/supabase-js";
+import { User as UserSupabase } from "@supabase/supabase-js";
 
 export interface User {
   id?: string;
@@ -191,13 +192,16 @@ export const userSlice = createSlice({
       (
         state,
         action: PayloadAction<{
-          user: User | null;
+          user: UserSupabase;
           session: Session | null;
         }>
       ) => {
         (state.loading = false),
           (state.user.id = action.payload.user?.id),
-          (state.user.email = action.payload.user?.email),
+          (state.user.display_name =
+            action.payload.user?.user_metadata?.display_name(
+              (state.user.email = action.payload.user?.email)
+            )),
           (state.user.created_at = action.payload.user?.created_at);
         state.error = "";
       }

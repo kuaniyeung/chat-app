@@ -1,31 +1,29 @@
-import { useRef, useState, useEffect } from "react";
 import {
   faCheck,
-  faTimes,
   faInfoCircle,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { createUser } from "../../features/user/userSlice";
-import LoadingSpinner from "../Reusable/LoadingSpinner";
 import Dashboard from "../Dashboard/Dashboard";
+import LoadingSpinner from "../Reusable/LoadingSpinner";
 import WarningDialog from "../Reusable/WarningDialog";
-
-interface Props {
-  closeAdd: Function;
-}
 
 const EMAIL_REGEX =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const DISPLAY_NAME_REGEX = /^.{3,70}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
-const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
+const CreateNewUser= () => {
   // Global states in Redux
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.user.loading);
 
   // Local states & refs & variables
+  const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState("");
@@ -104,7 +102,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
       setDisplayName("");
       setPassword("");
       setMatchPassword("");
-      closeAdd();
+      navigate("/");
     } catch (error) {
       console.error("An error occurred while dispatching createUser:", error);
     }
@@ -317,7 +315,7 @@ const CreateNewUser: React.FC<Props> = ({ closeAdd }) => {
             )}
             <button
               className="btn bg-base-300 form-control w-full max-w-xs"
-              onClick={(e) => closeAdd(e)}
+              onClick={()=> navigate("/")}
             >
               Cancel
             </button>

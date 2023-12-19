@@ -69,7 +69,7 @@ export const getChatrooms = createAsyncThunk(
         const { data } = await supabase
           .from("chatrooms_members")
           .select("member_id, users!inner(display_name)")
-          .eq("chatroom_id", chatroom.id)
+          .eq("chatroom_id", chatroom.id);
 
         return {
           id: chatroom.id,
@@ -81,7 +81,7 @@ export const getChatrooms = createAsyncThunk(
         };
       });
 
-        chatrooms = await Promise.all(promises);
+      chatrooms = await Promise.all(promises);
 
       return chatrooms as Chatroom[];
     } catch (error) {
@@ -188,6 +188,9 @@ export const chatroomSlice = createSlice({
     setSelectedChatroom: (state, action) => {
       state.selectedChatroom = action.payload;
     },
+    setNewChatroom: (state, action) => {
+      state.chatrooms = [...state.chatrooms, action.payload]
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(getChatrooms.pending, (state) => {
@@ -246,5 +249,5 @@ export const chatroomSlice = createSlice({
 });
 
 export default chatroomSlice.reducer;
-export const { setChatroomTabSelected, setSelectedChatroom } =
+export const { setChatroomTabSelected, setSelectedChatroom, setNewChatroom } =
   chatroomSlice.actions;

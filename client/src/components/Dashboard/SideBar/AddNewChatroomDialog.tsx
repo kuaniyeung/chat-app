@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import {
+  Chatroom,
   addNewChatroom,
   setSelectedChatroom,
 } from "../../../features/chatroom/chatroomSlice";
 import WarningDialog from "../../Reusable/WarningDialog";
 import LoadingSpinner from "../../Reusable/LoadingSpinner";
 import { Contact } from "../../../features/contact/contactSlice";
+import { socket } from "../../../SocketClient";
 
 interface Props {
   isAddChatroomOpen: boolean;
@@ -39,6 +41,12 @@ const AddNewChatroomDialog: React.FC<Props> = ({
     nameRef.current?.focus();
   }, []);
 
+  const sendNewChatroom = (newChatroom: Chatroom) => {
+    if (socket && user?.display_name) {
+      socket.emit("send_new_chatroom", newChatroom);
+    }
+  };
+
   const handleCheckboxChange = (contactId: string) => {
     setSelectedContactsIds((prevSelected) =>
       prevSelected.includes(contactId)
@@ -62,7 +70,9 @@ const AddNewChatroomDialog: React.FC<Props> = ({
         addNewChatroom({ name, members: selectedContacts })
       );
 
-      dispatch(setSelectedChatroom(action.payload));
+      dispatch(setSelectedChatroom(action.payload as Chatroom));
+
+      sendNewChatroom(action.payload as Chatroom);
 
       if (addNewChatroom.rejected.match(action)) {
         const error = action.payload as { message?: string };
@@ -75,8 +85,6 @@ const AddNewChatroomDialog: React.FC<Props> = ({
         console.error("An unknown error occurred.");
         setErrMsg("An unknown error occurred.");
       }
-
-      console.log(action);
     } catch (error) {
       console.error(
         "An error occurred while dispatching addNewChatroom:",

@@ -5,14 +5,14 @@ import type { RootState } from "../../app/store";
 export interface Contact {
   id: string;
   display_name: string;
-};
+}
 
 interface InitialState {
   isSelected: boolean;
   loading: boolean;
   contacts: Contact[];
   error: string;
-};
+}
 
 interface AddNewContactPayload {
   displayName: string;
@@ -32,17 +32,26 @@ export const getContacts = createAsyncThunk(
     const currentUser = currentState.user.user;
 
     try {
-      const { data: contactsData, error } = await supabase.rpc("get_contacts", {
-        p_user_id: currentUser.id,
-      });
+      const { data: contactsData, error } = await supabase
+        .from("contacts")
+        .select("contact_id, contacts_contact_id_fkey!inner(display_name)")
+        .eq("user_id", currentUser.id);
 
       if (error) throw error;
 
-      return contactsData;
+      // return contactsData;
+
+      const formattedContacts = contactsData.map((contact: any) => {
+        return {
+          id: contact.contact_id,
+          display_name: contact.contacts_contact_id_fkey.display_name,
+        };
+      });
+
+      return formattedContacts;
     } catch (error) {
       return rejectWithValue(error as Error);
     }
-
   }
 );
 
@@ -55,6 +64,7 @@ export const addNewContact = createAsyncThunk(
     };
     const currentState: RootState = getState() as RootState;
     const currentUser = currentState.user.user;
+    const currentContacts = currentState.contact.contacts;
 
     // Validate new contact: does it exist?
 
@@ -80,22 +90,10 @@ export const addNewContact = createAsyncThunk(
 
     // Validate new contact: has it been added already?
 
+    const contactAddedPrev = currentContacts.includes(verifiedContact);
+    
     try {
-      const { data: existingContacts, error } = await supabase.rpc(
-        "get_contacts",
-        {
-          p_user_id: currentUser.id,
-        }
-      );
-
-      if (error) throw error;
-
-      const contactExists = existingContacts.some(
-        (contact: Contact) =>
-          contact.display_name === verifiedContact?.display_name
-      );
-
-      if (contactExists)
+      if (contactAddedPrev)
         throw new Error("Contact already exists in contact list.");
     } catch (error) {
       return rejectWithValue(error as Error);
@@ -108,8 +106,12 @@ export const addNewContact = createAsyncThunk(
         .from("contacts")
         .insert([
           {
-            contact1_user_id: verifiedContact.id,
-            contact2_user_id: currentUser.id,
+            user_id: currentUser.id,
+            contact_id: verifiedContact.id,
+          },
+          {
+            user_id: verifiedContact.id,
+            contact_id: currentUser.id,
           },
         ])
         .select();

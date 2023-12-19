@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { DateTime } from "luxon";
-import { socket } from "../../../SocketClient";
-import TypingDots from "./TypingDots";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons/faUserPlus";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { DateTime } from "luxon";
+import { useEffect, useRef, useState } from "react";
+import { socket } from "../../../SocketClient";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { addNewContact } from "../../../features/contact/contactSlice";
 import ConfirmationDialog from "../../Reusable/ConfirmationDialog";
+import TypingDots from "./TypingDots";
 
 interface PopulateMessageType {
   id: number | null;
@@ -104,6 +104,16 @@ const Messages = () => {
 
     setConfirmationDialogIsOpen(false);
     return;
+  };
+
+  const sendNewContactSignal = (contactDisplayName: string) => {
+    if (socket && contactDisplayName && user.display_name && user.id) {
+      socket.emit("send_new_contact", {
+        contact_display_name: contactDisplayName,
+        sender_display_name: user.display_name,
+        sender_id: user.id,
+      });
+    }
   };
 
   const populateMessage = ({
@@ -244,8 +254,10 @@ const Messages = () => {
       <ConfirmationDialog
         isOpen={confirmationDialogIsOpen}
         onConfirm={() => {
-          if (unknownContactDisplayName)
+          if (unknownContactDisplayName) {
             addUnknownToContact(unknownContactDisplayName);
+            sendNewContactSignal(unknownContactDisplayName);
+          }
           setUnknownContactDisplayName(null);
         }}
         onCancel={() => setConfirmationDialogIsOpen(false)}

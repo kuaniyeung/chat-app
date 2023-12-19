@@ -1,4 +1,4 @@
-import { useAppSelector, useAppDispatch } from "../../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setChatroomTabSelected } from "../../../features/chatroom/chatroomSlice";
 import { setContactTabSelected } from "../../../features/contact/contactSlice";
 
@@ -13,6 +13,8 @@ const SideBarTab = () => {
   // Local states & refs & variables
   const classes =
     "tab w-2/4 text-base transition-all duration-300 ease-in-out transform";
+
+
 
   return (
     <div className="tabs tabs-boxed bg-base-200 fixed w-full z-10 bottom-0 p-2">

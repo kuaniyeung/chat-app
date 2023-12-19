@@ -1,10 +1,10 @@
+import { useState } from "react";
+import { useAppSelector } from "../../../app/hooks";
+import AddNewChatroomDialog from "./AddNewChatroomDialog";
+import AddNewContactDialog from "./AddNewContactDialog";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SideBarTab from "./SideBarTab";
-import { useAppSelector } from "../../../app/hooks";
-import { useState } from "react";
-import AddNewChatroomDialog from "./AddNewChatroomDialog";
-import AddNewContactDialog from "./AddNewContactDialog";
 
 const SideBar = () => {
   // Global states in Redux
