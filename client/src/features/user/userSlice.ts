@@ -9,13 +9,13 @@ export interface User {
   display_name?: string;
   email?: string;
   created_at?: string;
-};
+}
 
 interface InitialState {
   loading: boolean;
   user: User;
   error: string;
-};
+}
 
 interface SignInUserPayload {
   email: string;
@@ -199,9 +199,8 @@ export const userSlice = createSlice({
         (state.loading = false),
           (state.user.id = action.payload.user?.id),
           (state.user.display_name =
-            action.payload.user?.user_metadata?.display_name(
-              (state.user.email = action.payload.user?.email)
-            )),
+            action.payload.user?.user_metadata?.display_name),
+          (state.user.email = action.payload.user?.email),
           (state.user.created_at = action.payload.user?.created_at);
         state.error = "";
       }

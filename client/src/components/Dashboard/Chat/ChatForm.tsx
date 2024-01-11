@@ -11,6 +11,10 @@ import {
 } from "../../../features/message/messageSlice";
 import LoadingSpinner from "../../Reusable/LoadingSpinner";
 import WarningDialog from "../../Reusable/WarningDialog";
+import {
+  setAlerted,
+  setLastMessage,
+} from "../../../features/chatroom/chatroomSlice";
 
 const ChatForm = () => {
   // Global states in Redux
@@ -20,6 +24,7 @@ const ChatForm = () => {
   const selectedChatroom = useAppSelector(
     (state) => state.chatroom.selectedChatroom
   );
+  const numOfAlertedChatrooms = useAppSelector(state => state.chatroom.alertedChatrooms)
 
   // Local states & refs
   const [message, setMessage] = useState("");
@@ -47,6 +52,17 @@ const ChatForm = () => {
           created_at: data.created_at,
         })
       );
+      
+      dispatch(
+        setLastMessage({
+          sender_display_name: data.sender_display_name,
+          content: data.content,
+          chatroom_id: data.chatroom_id,
+          created_at: data.created_at,
+        })
+      );
+
+      dispatch(setAlerted({ chatroom_id: data.chatroom_id, alerted: true }));
     };
 
     if (selectedChatroom) {
@@ -60,7 +76,7 @@ const ChatForm = () => {
         socket.off("receive_message", handleNewMessage);
       }
     };
-  }, [socket.id, selectedChatroom]);
+  }, [socket.id, selectedChatroom, numOfAlertedChatrooms]);
 
   const sendMessage = () => {
     if (socket && selectedChatroom && user?.display_name) {
@@ -115,11 +131,21 @@ const ChatForm = () => {
         created_at: DateTime.now().toISO(),
       })
     );
+
+    dispatch(
+      setLastMessage({
+        sender_display_name: user.display_name,
+        content: message,
+        chatroom_id: selectedChatroom?.id,
+        created_at: DateTime.now().toISO(),
+      })
+    );
+
     setMessage("");
   };
 
   return (
-    <div className="w-full flex-auto mt-3">
+    <div className="w-full flex-auto mt-3 p-2">
       <WarningDialog
         isOpen={warningDialogIsOpen}
         onConfirm={() => {

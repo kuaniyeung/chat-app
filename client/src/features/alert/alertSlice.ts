@@ -28,10 +28,19 @@ export const alertSlice = createSlice({
       state.alerts = [...state.alerts, action.payload];
     },
     removeAlert: (state, action) => {
-      const chatroom = state.alerts.find(alert => alert.id === action.payload)?.data.newMessage?.chatroom
+      const {alert_id, chatroom_id} = action.payload
+
+      if (alert_id) 
+{      const chatroom = state.alerts.find(alert => alert.id === alert_id)?.data.newMessage?.chatroom
       state.alerts = state.alerts.filter(
         (alert) => alert.data.newMessage?.chatroom !== chatroom
-      );
+      );}
+
+      if (chatroom_id) {
+        state.alerts = state.alerts.filter(
+          (alert) => alert.data.newMessage?.chatroom.id !== chatroom_id
+        );
+      }
     },
   },
 });

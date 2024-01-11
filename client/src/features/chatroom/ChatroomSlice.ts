@@ -3,16 +3,23 @@ import { Contact } from "../contact/contactSlice";
 import { supabase } from "../../SupabasePlugin";
 import type { RootState } from "../../app/store";
 
+interface LastMessage {
+  sender_display_name: string | null;
+  content: string | null;
+  created_at: string | null;
+}
 export interface Chatroom {
   id: number;
   name?: string;
+  alerted: boolean;
   members: Contact[];
+  lastMessage: LastMessage;
 }
 
 interface InitialState {
-  isSelected: boolean;
   selectedChatroom: Chatroom | null;
-  loading: boolean;
+  alertedChatrooms: number;
+  loading: boolean; 
   chatrooms: Chatroom[];
   error: string;
 }
@@ -23,8 +30,8 @@ interface AddNewChatroomPayload {
 }
 
 const initialState: InitialState = {
-  isSelected: true,
   selectedChatroom: null,
+  alertedChatrooms: 0,
   loading: false,
   chatrooms: [],
   error: "",
@@ -66,18 +73,62 @@ export const getChatrooms = createAsyncThunk(
         name: any;
         members: Array<{ id: any; display_name: any }> | undefined;
       } | null>[] = (chatrooms ?? []).map(async (chatroom) => {
-        const { data } = await supabase
+        const { data: memberData, error: chatroomError } = await supabase
           .from("chatrooms_members")
           .select("member_id, users!inner(display_name)")
           .eq("chatroom_id", chatroom.id);
 
+        if (chatroomError) throw chatroomError;
+
+        const { data: lastMessageData, error: lastMessageError } =
+          await supabase
+            .from("messages")
+            .select("content, sender_display_name, created_at")
+            .eq("chatroom_id", chatroom.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (lastMessageError) throw lastMessageError;
+
+        if (!lastMessageData?.content) {
+          const { data: chatroomData, error: chatroomError } = await supabase
+            .from("chatrooms")
+            .select("created_at")
+            .eq("id", chatroom.id)
+            .maybeSingle();
+
+          if (chatroomError) throw chatroomError;
+
+          return {
+            id: chatroom.id,
+            name: chatroom.name,
+            alerted: false,
+            members: memberData?.map((member: any) => ({
+              id: member.member_id,
+              display_name: member.users.display_name,
+            })),
+            lastMessage: {
+              sender_display_name: null,
+              content: null,
+              created_at: chatroomData?.created_at,
+            },
+          };
+        }
+
         return {
           id: chatroom.id,
           name: chatroom.name,
-          members: data?.map((member: any) => ({
+          alerted: false,
+          members: memberData?.map((member: any) => ({
             id: member.member_id,
             display_name: member.users.display_name,
           })),
+          lastMessage: {
+            sender_display_name: lastMessageData?.sender_display_name,
+            content: lastMessageData?.content,
+            created_at: lastMessageData?.created_at,
+          },
         };
       });
 
@@ -87,6 +138,8 @@ export const getChatrooms = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error as Error);
     }
+
+    // Fetch last message in chatrooms
   }
 );
 
@@ -127,17 +180,35 @@ export const addNewChatroom = createAsyncThunk(
 
     // Add new chatroom
 
-    let newChatroom: Chatroom = { id: 0, name: "", members: [] };
+    let newChatroom: Chatroom = {
+      id: 0,
+      name: "",
+      alerted: false,
+      members: [],
+      lastMessage: {
+        sender_display_name: null,
+        content: null,
+        created_at: null,
+      },
+    };
 
     try {
       const { data, error } = await supabase
         .from("chatrooms")
         .insert([{ name: payload.name }])
-        .select("id, name");
+        .select("id, name, created_at");
 
       if (error) throw error;
 
-      newChatroom = { ...newChatroom, id: data[0].id, name: data[0].name };
+      newChatroom = {
+        ...newChatroom,
+        id: data[0].id,
+        name: data[0].name,
+        lastMessage: {
+          ...newChatroom.lastMessage,
+          created_at: data[0].created_at,
+        },
+      };
     } catch (error) {
       return rejectWithValue(error as Error);
     }
@@ -182,15 +253,53 @@ export const chatroomSlice = createSlice({
   name: "chatroom",
   initialState,
   reducers: {
-    setChatroomTabSelected: (state, action) => {
-      state.isSelected = action.payload;
-    },
     setSelectedChatroom: (state, action) => {
       state.selectedChatroom = action.payload;
     },
     setNewChatroom: (state, action) => {
-      state.chatrooms = [...state.chatrooms, action.payload]
-    }
+      state.chatrooms = [...state.chatrooms, action.payload];
+    },
+    setAlerted: (state, action) => {
+      const { chatroom_id, alerted } = action.payload;
+
+      if (alerted) {
+        state.alertedChatrooms ++
+      } else {
+        state.alertedChatrooms --
+      }
+
+      const chatroomIndex = state.chatrooms.findIndex(
+        (chatroom) => chatroom.id === chatroom_id
+      );
+
+      if (chatroomIndex !== -1) {
+        state.chatrooms[chatroomIndex] = {
+          ...state.chatrooms[chatroomIndex],
+          alerted,
+        };
+      }
+
+      // console.log(state.chatrooms[chatroomIndex]);
+    },
+    setLastMessage: (state, action) => {
+      const { chatroom_id, sender_display_name, content, created_at } =
+        action.payload;
+
+      const chatroomIndex = state.chatrooms.findIndex(
+        (chatroom) => chatroom.id === chatroom_id
+      );
+
+      if (chatroomIndex !== -1) {
+        state.chatrooms[chatroomIndex] = {
+          ...state.chatrooms[chatroomIndex],
+          lastMessage: {
+            sender_display_name,
+            content,
+            created_at,
+          },
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getChatrooms.pending, (state) => {
@@ -249,5 +358,9 @@ export const chatroomSlice = createSlice({
 });
 
 export default chatroomSlice.reducer;
-export const { setChatroomTabSelected, setSelectedChatroom, setNewChatroom } =
-  chatroomSlice.actions;
+export const {
+  setSelectedChatroom,
+  setNewChatroom,
+  setAlerted,
+  setLastMessage,
+} = chatroomSlice.actions;

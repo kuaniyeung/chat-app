@@ -9,12 +9,14 @@ import {
 } from "../../../features/chatroom/chatroomSlice";
 import { Contact } from "../../../features/contact/contactSlice";
 import { socket } from "../../../SocketClient";
-
+import { useNavigate } from "react-router-dom";
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 const ContactsTab: React.FC<Props> = ({ onClick }) => {
+  const navigate = useNavigate();
+
   // Global states in Redux
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
@@ -22,19 +24,22 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
     id: user!.id!,
     display_name: user!.display_name!,
   };
+  const selectedChatroom = useAppSelector(
+    (state) => state.chatroom.selectedChatroom
+  );
 
   const contacts = useAppSelector((state) => state.contact.contacts);
   const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
 
-    const sendNewChatroom = (newChatroom: Chatroom) => {
-      if (socket && user?.display_name) {
-        socket.emit("send_new_chatroom", newChatroom);
-      }
-    };
+  const sendNewChatroom = (newChatroom: Chatroom) => {
+    if (socket && user?.display_name) {
+      socket.emit("send_new_chatroom", newChatroom);
+    }
+  };
 
   const handleOpenChat = async (contact: Contact) => {
     const membersIds = [user.id, contact.id];
-    let existingChatroom;
+    let existingChatroom: Chatroom | undefined;
 
     // Check if a chat between this contact already exists
     chatrooms
@@ -44,8 +49,11 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
           existingChatroom = c;
       });
 
-    if (existingChatroom)
-      return dispatch(setSelectedChatroom(existingChatroom));
+    if (existingChatroom) {
+      dispatch(setSelectedChatroom(existingChatroom));
+      navigate(`/chatrooms/${existingChatroom.id}`);
+      return;
+    }
 
     // Create new chat if not
     let newChatroomContacts: Contact[];
@@ -58,7 +66,10 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
           addNewChatroom({ name: "", members: newChatroomContacts })
         );
 
-        dispatch(setSelectedChatroom(action.payload));
+        const chatroom = action.payload as Chatroom;
+
+        dispatch(setSelectedChatroom(chatroom));
+        navigate(`/chatrooms/${chatroom.id}`);
         sendNewChatroom(action.payload as Chatroom);
 
         if (addNewChatroom.rejected.match(action)) {
@@ -79,11 +90,13 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
 
   return (
     <>
-      <h1 className="text-secondary text-center p-3 uppercase text-sm italic bg-base-200 flex justify-center items-center">
+      <h1 className="relative text-secondary text-center p-3 uppercase text-sm italic bg-base-200 flex justify-center items-center">
         <span>Your Contacts</span>
 
         <button
-          className="btn btn-sm btn-primary px-2 fixed right-2 bg-secondary"
+          className={`btn btn-sm btn-primary px-2 right-2 bg-secondary ${
+            selectedChatroom ? "left-full" : "absolute"
+          }`}
           onClick={onClick}
         >
           <FontAwesomeIcon icon={faPlus} />

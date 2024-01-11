@@ -1,3 +1,5 @@
+@import-normalize;
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -15,5 +17,5 @@
 
 [data-theme="pastel"] #root {
   font-family: "Nunito", sans-serif;
-  	letter-spacing: 0.05em;
+  letter-spacing: 0.05em;
 }

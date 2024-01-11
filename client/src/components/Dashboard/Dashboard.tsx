@@ -7,18 +7,20 @@ import { setNewAlert } from "../../features/alert/alertSlice";
 import {
   Chatroom,
   getChatrooms,
+  setAlerted,
+  setLastMessage,
   setNewChatroom,
+  setSelectedChatroom,
 } from "../../features/chatroom/chatroomSlice";
 import { getContacts } from "../../features/contact/contactSlice";
-import {
-  Message,
-  getLastMessagesByChatroom,
-} from "../../features/message/messageSlice";
+import { Message } from "../../features/message/messageSlice";
 import { signOutUser } from "../../features/user/userSlice";
 import ConfirmationDialog from "../Reusable/ConfirmationDialog";
 import AlertList from "./AlertList";
-import Chat from "./Chat/Chat";
 import SideBar from "./SideBar/SideBar";
+import { Route, Routes } from "react-router-dom";
+import Chat from "./Chat/Chat";
+import { useMediaQuery } from "@react-hook/media-query";
 
 const Dashboard = () => {
   // Global states in Redux
@@ -33,8 +35,31 @@ const Dashboard = () => {
   const alerts = useAppSelector((state) => state.alert.alerts);
 
   // Local states & refs & variables
+  const isTablet = useMediaQuery("(min-width: 768px)");
   const [confirmationDialogIsOpen, setConfirmationDialogIsOpen] =
     useState(false);
+  const newestChatroom: Chatroom = chatrooms.reduce((prevChatroom, currentChatroom) => {
+    const prevTimestamp = new Date(
+      prevChatroom.lastMessage?.created_at || 0
+    ).getTime();
+    const currentTimestamp = new Date(
+      currentChatroom.lastMessage?.created_at || 0
+    ).getTime();
+
+    return currentTimestamp > prevTimestamp ? currentChatroom : prevChatroom;
+  }, chatrooms[0]);
+
+  useEffect(() => {
+    if (isTablet && newestChatroom) {
+      dispatch(setSelectedChatroom(newestChatroom));
+    }
+
+    return () => {
+      dispatch(setSelectedChatroom(null));
+    };
+  }, [isTablet, newestChatroom?.id]);
+
+  // Fetching existing chatrooms and contacts
 
   const fetchContacts = async () => {
     try {
@@ -52,25 +77,12 @@ const Dashboard = () => {
     }
   };
 
-  const fetchLastMessages = async () => {
-    try {
-      await dispatch(getLastMessagesByChatroom()).unwrap();
-    } catch (error) {
-      console.error(
-        "An error occurred while dispatching getLastMessagesByChatroom:",
-        error
-      );
-    }
-  };
-
   useEffect(() => {
     fetchContacts();
     fetchChatrooms();
   }, [displayName, selectedChatroom]);
 
-  useEffect(() => {
-    fetchLastMessages();
-  }, [chatrooms]);
+  // Listening to socket for new contacts and messages
 
   useEffect(() => {
     const handleNewChatroom = (data: Chatroom) => {
@@ -78,7 +90,8 @@ const Dashboard = () => {
         return;
 
       dispatch(setNewChatroom(data));
-      fetchChatrooms()
+      dispatch(setAlerted({ chatroom_id: data.id, alerted: true }));
+      fetchChatrooms();
     };
 
     const handleNewMessage = (data: Message) => {
@@ -90,7 +103,11 @@ const Dashboard = () => {
 
       dispatch(
         setNewAlert({
-          id: Math.max(...alerts.map((alert) => alert.id)) + 1,
+          id:
+            alerts.reduce(
+              (maxId, alert) => (alert.id > maxId ? alert.id : maxId),
+              0
+            ) + 1,
           type: "newMessage",
           data: {
             newContact: null,
@@ -109,6 +126,17 @@ const Dashboard = () => {
           },
         })
       );
+
+      dispatch(
+        setLastMessage({
+          sender_display_name: data.sender_display_name,
+          content: data.content,
+          chatroom_id: data.chatroom_id,
+          created_at: data.created_at,
+        })
+      );
+
+      dispatch(setAlerted({ chatroom_id: data.chatroom_id, alerted: true }));
     };
 
     const handleNewContact = (data: {
@@ -121,7 +149,11 @@ const Dashboard = () => {
 
       dispatch(
         setNewAlert({
-          id: Math.max(...alerts.map((alert) => alert.id)) + 1,
+          id:
+            alerts.reduce(
+              (maxId, alert) => (alert.id > maxId ? alert.id : maxId),
+              0
+            ) + 1,
           type: "newContact",
           data: {
             newContact: {
@@ -143,7 +175,9 @@ const Dashboard = () => {
       socket.off("global_new_message", handleNewMessage);
       socket.off("receive_new_contact", handleNewContact);
     };
-  }, [socket.id, selectedChatroom, chatrooms, contacts]);
+  }, [socket.id, selectedChatroom, chatrooms.length, contacts.length]);
+
+  // Handle logging out of account
 
   const handleConfirmLogOut = async () => {
     try {
@@ -166,49 +200,56 @@ const Dashboard = () => {
   };
 
   return (
-    <>
-      <div className="flex justify-between bg-accent items-center">
-        <h1 className="p-3 px-6 text-accent-content text-lg">
-          <span className="text-xs uppercase">Welcome back </span>
-          <span className="font-bold ml-1">{displayName}</span>
-        </h1>
-        <div className="dropdown dropdown-end">
-          <label tabIndex={0} className="btn btn-md btn-circle btn-ghost">
-            <FontAwesomeIcon icon={faEllipsisVertical} />
-          </label>
-          <ul
-            tabIndex={0}
-            className="dropdown-content z-[1] menu p-2 shadow rounded-xl bg-base-100 w-max"
-          >
-            <li>
-              <a
-                onClick={() => {
-                  setConfirmationDialogIsOpen(true);
-                }}
-                className="text-neutral rounded-xl p-2"
-              >
-                Sign Out
-              </a>
-            </li>
-          </ul>
+    <div className="md:flex">
+      <div
+        className={`md:w-2/5 h-screen flex flex-col ${
+          selectedChatroom ? "fixed left-full md:static" : ""
+        }`}
+      >
+        <div className="flex justify-between bg-accent items-center">
+          <h1 className="p-3 px-6 text-accent-content text-lg border-b-2 border-b-accent">
+            <span className="text-xs uppercase">Welcome back </span>
+            <span className="font-bold ml-1">{displayName}</span>
+          </h1>
+          <div className="dropdown dropdown-end">
+            <label tabIndex={0} className="btn btn-md btn-circle btn-ghost">
+              <FontAwesomeIcon icon={faEllipsisVertical} />
+            </label>
+            <ul
+              tabIndex={0}
+              className="dropdown-content z-[1] menu p-2 shadow rounded-xl bg-base-100 w-max"
+            >
+              <li>
+                <a
+                  onClick={() => {
+                    setConfirmationDialogIsOpen(true);
+                  }}
+                  className="text-neutral rounded-xl p-2"
+                >
+                  Sign Out
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
+        <SideBar />
+
+        {/* Confirmation Dialog */}
+        <ConfirmationDialog
+          isOpen={confirmationDialogIsOpen}
+          onConfirm={handleConfirmLogOut}
+          onCancel={() => setConfirmationDialogIsOpen(false)}
+          text={"Are you sure you want to sign out?"}
+        />
+
+        {/* Alerts */}
+        <AlertList />
       </div>
-      <SideBar />
-
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={confirmationDialogIsOpen}
-        onConfirm={handleConfirmLogOut}
-        onCancel={() => setConfirmationDialogIsOpen(false)}
-        text={"Are you sure you want to sign out?"}
-      />
-
-      {/* Chat */}
-      {selectedChatroom && <Chat />}
-
-      {/* Alerts */}
-      <AlertList />
-    </>
+      <Routes>
+        {isTablet ? <Route path="/" index element={<Chat />} /> : ""}
+        <Route path="/chatrooms/:chatroomId" element={<Chat />} />
+      </Routes>
+    </div>
   );
 };
 
