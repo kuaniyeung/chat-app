@@ -18,9 +18,10 @@ import { signOutUser } from "../../features/user/userSlice";
 import ConfirmationDialog from "../Reusable/ConfirmationDialog";
 import AlertList from "./AlertList";
 import SideBar from "./SideBar/SideBar";
-import { Route, Routes } from "react-router-dom";
+import { Outlet, Route, Routes } from "react-router-dom";
 import Chat from "./Chat/Chat";
 import { useMediaQuery } from "@react-hook/media-query";
+import NoRouteMatch from "../Reusable/NoRouteMatch";
 
 const Dashboard = () => {
   // Global states in Redux
@@ -38,16 +39,19 @@ const Dashboard = () => {
   const isTablet = useMediaQuery("(min-width: 768px)");
   const [confirmationDialogIsOpen, setConfirmationDialogIsOpen] =
     useState(false);
-  const newestChatroom: Chatroom = chatrooms.reduce((prevChatroom, currentChatroom) => {
-    const prevTimestamp = new Date(
-      prevChatroom.lastMessage?.created_at || 0
-    ).getTime();
-    const currentTimestamp = new Date(
-      currentChatroom.lastMessage?.created_at || 0
-    ).getTime();
+  const newestChatroom: Chatroom = chatrooms.reduce(
+    (prevChatroom, currentChatroom) => {
+      const prevTimestamp = new Date(
+        prevChatroom.lastMessage?.created_at || 0
+      ).getTime();
+      const currentTimestamp = new Date(
+        currentChatroom.lastMessage?.created_at || 0
+      ).getTime();
 
-    return currentTimestamp > prevTimestamp ? currentChatroom : prevChatroom;
-  }, chatrooms[0]);
+      return currentTimestamp > prevTimestamp ? currentChatroom : prevChatroom;
+    },
+    chatrooms[0]
+  );
 
   useEffect(() => {
     if (isTablet && newestChatroom) {
@@ -245,9 +249,10 @@ const Dashboard = () => {
         {/* Alerts */}
         <AlertList />
       </div>
+
       <Routes>
-        {isTablet ? <Route path="/" index element={<Chat />} /> : ""}
-        <Route path="/chatrooms/:chatroomId" element={<Chat />} />
+        {isTablet ? <Route path="/" index element={<Chat />} /> : null}
+        <Route path="chatrooms/:chatroomId" element={<Chat />} />
       </Routes>
     </div>
   );

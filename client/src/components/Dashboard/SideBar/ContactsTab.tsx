@@ -10,6 +10,7 @@ import {
 import { Contact } from "../../../features/contact/contactSlice";
 import { socket } from "../../../SocketClient";
 import { useNavigate } from "react-router-dom";
+import { useMediaQuery } from "@react-hook/media-query";
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -20,16 +21,18 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
   // Global states in Redux
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.user);
+  const selectedChatroom = useAppSelector(
+    (state) => state.chatroom.selectedChatroom
+  );
+  const contacts = useAppSelector((state) => state.contact.contacts);
+  const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
+
+  // Local states and variables
+  const isMobile = useMediaQuery("(max-width: 768px");
   const userAsContact: Contact = {
     id: user!.id!,
     display_name: user!.display_name!,
   };
-  const selectedChatroom = useAppSelector(
-    (state) => state.chatroom.selectedChatroom
-  );
-
-  const contacts = useAppSelector((state) => state.contact.contacts);
-  const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
 
   const sendNewChatroom = (newChatroom: Chatroom) => {
     if (socket && user?.display_name) {
@@ -95,7 +98,7 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
 
         <button
           className={`btn btn-sm btn-primary px-2 right-2 bg-secondary ${
-            selectedChatroom ? "left-full" : "absolute"
+            selectedChatroom && isMobile ? "left-full" : "absolute"
           }`}
           onClick={onClick}
         >
@@ -111,11 +114,13 @@ const ContactsTab: React.FC<Props> = ({ onClick }) => {
       {/* List out existing contacts: */}
       {contacts.map((contact) => {
         return (
-          <div key={contact.id} className="block cursor-pointer my-5 mx-6">
-            <a className="text-neutral" onClick={() => handleOpenChat(contact)}>
-              {contact.display_name}
-            </a>
-          </div>
+          <a
+            key={contact.id}
+            className="block cursor-pointer my-5 mx-6"
+            onClick={() => handleOpenChat(contact)}
+          >
+            <div className="text-neutral">{contact.display_name}</div>
+          </a>
         );
       })}
     </>

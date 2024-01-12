@@ -7,6 +7,8 @@ import Login from "./components/SignInPage/Login";
 import RequireAuth from "./components/SignInPage/RequireAuth";
 import SignInPage from "./components/SignInPage/SignInPage";
 import Chat from "./components/Dashboard/Chat/Chat";
+import ContactsTab from "./components/Dashboard/SideBar/ContactsTab";
+import ChatroomsTab from "./components/Dashboard/SideBar/ChatroomsTab";
 
 function App() {
   // console.info(
@@ -15,15 +17,17 @@ function App() {
 
   return (
     <Routes>
-        <Route
-          path="*"
-          element={
-            <RequireAuth>
-              <Dashboard />
-            </RequireAuth>
-          }
-        />
-       
+      <Route
+        path="/*"
+        element={
+          <RequireAuth>
+            <Dashboard />
+          </RequireAuth>
+        }
+      >
+        <Route path="*" element={<NoRouteMatch />} />
+      </Route>
+
       <Route path="signin" element={<SignInPage />} />
       <Route path="login" element={<Login />} />
       <Route path="signup" element={<CreateNewUser />} />

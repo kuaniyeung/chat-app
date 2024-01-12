@@ -4,11 +4,12 @@ import AddNewContactDialog from "./AddNewContactDialog";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SideBarTab from "./SideBarTab";
-import { Route, Routes } from "react-router-dom";
+import { Outlet, Route, Routes } from "react-router-dom";
 import { useMediaQuery } from "@react-hook/media-query";
 import Chat from "../Chat/Chat";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
+import NoRouteMatch from "../../Reusable/NoRouteMatch";
 
 const SideBar = () => {
   // Global states in Redux
@@ -50,7 +51,14 @@ const SideBar = () => {
     <div className="relative flex-grow ">
       <Routes>
         {isTablet ? (
-          ""
+          <Route
+            path="*"
+            element={
+              <ChatroomsTab
+                onClick={() => setShowAddChatroom(!showAddChatroom)}
+              />
+            }
+          ></Route>
         ) : (
           <Route
             path="/"
@@ -64,7 +72,7 @@ const SideBar = () => {
         )}
 
         <Route
-          path="chatrooms"
+          path="/"
           element={
             <ChatroomsTab
               onClick={() => setShowAddChatroom(!showAddChatroom)}

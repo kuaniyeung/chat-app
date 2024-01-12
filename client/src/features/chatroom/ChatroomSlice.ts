@@ -19,7 +19,7 @@ export interface Chatroom {
 interface InitialState {
   selectedChatroom: Chatroom | null;
   alertedChatrooms: number;
-  loading: boolean; 
+  loading: boolean;
   chatrooms: Chatroom[];
   error: string;
 }
@@ -263,9 +263,9 @@ export const chatroomSlice = createSlice({
       const { chatroom_id, alerted } = action.payload;
 
       if (alerted) {
-        state.alertedChatrooms ++
+        state.alertedChatrooms++;
       } else {
-        state.alertedChatrooms --
+        state.alertedChatrooms--;
       }
 
       const chatroomIndex = state.chatrooms.findIndex(

@@ -10,7 +10,7 @@ const SideBarTab = () => {
   return (
     <nav className="absolute tabs tabs-boxed bg-base-200 w-full bottom-0 p-2">
       <NavLink
-        to="/chatrooms"
+        to="/"
         className={({ isActive }) =>
           isActive || location.pathname === "/"
             ? `${classes} tab-active !bg-primary`

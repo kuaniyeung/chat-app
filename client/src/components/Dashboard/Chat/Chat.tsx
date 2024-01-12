@@ -13,7 +13,9 @@ import { useMediaQuery } from "@react-hook/media-query";
 const Chat = () => {
   const navigate = useNavigate();
   const { chatroomId } = useParams();
-  const selectedChatroomId = chatroomId ? parseInt(chatroomId, 10) : 0;
+  const selectedChatroomIdFromParams = chatroomId
+    ? parseInt(chatroomId, 10)
+    : 0;
 
   // Global states in Redux
   const dispatch = useAppDispatch();
@@ -26,17 +28,19 @@ const Chat = () => {
   const loading = useAppSelector((state) => state.message.loading);
 
   // Local states and variables
-    const isTablet = useMediaQuery("(min-width: 768px)");
+  const isTablet = useMediaQuery("(min-width: 768px)");
   const [initialFetch, setInitialFetch] = useState(false);
   const selectedChatroomFromParams = chatrooms.find(
-    (chatroom) => chatroom.id === selectedChatroomId
+    (chatroom) => chatroom.id === selectedChatroomIdFromParams
   );
 
   const fetchMessages = async () => {
-    if (selectedChatroomId) {
+    console.log(selectedChatroom);
+    if (selectedChatroomIdFromParams) {
+      console.log("trying id from params");
       try {
         await dispatch(
-          getMessagesByChatroom({ chatroom_id: selectedChatroomId })
+          getMessagesByChatroom({ chatroom_id: selectedChatroomIdFromParams })
         ).unwrap();
         setInitialFetch(false);
       } catch (error) {
@@ -45,9 +49,8 @@ const Chat = () => {
           error
         );
       }
-    } 
-    
-    if (selectedChatroom?.id) {
+    } else if (selectedChatroom?.id) {
+      console.log("trying id from redux ");
       try {
         await dispatch(
           getMessagesByChatroom({ chatroom_id: selectedChatroom?.id })
@@ -71,14 +74,13 @@ const Chat = () => {
 
     return selectedChatroom?.name;
   };
-
   useEffect(() => {
     setInitialFetch(true);
     fetchMessages();
-    if (selectedChatroomId) {
+    if (selectedChatroomIdFromParams) {
       dispatch(setSelectedChatroom(selectedChatroomFromParams));
     }
-  }, [chatroomId]);
+  }, [chatroomId, selectedChatroom]);
 
   return (
     <div className="h-screen flex flex-col max-h-full h-full justify-between md:w-3/5 md:border-l-2 md:border-l-accent">
@@ -90,9 +92,9 @@ const Chat = () => {
 
         {/* Close button */}
         <button
-          className={`btn btn-circle btn-ghost ${isTablet ? "hidden": ""}`}
+          className={`btn btn-circle btn-ghost ${isTablet ? "hidden" : ""}`}
           onClick={() => {
-            navigate(`/chatrooms`);
+            navigate(`/`);
             dispatch(setSelectedChatroom(null));
           }}
         >
