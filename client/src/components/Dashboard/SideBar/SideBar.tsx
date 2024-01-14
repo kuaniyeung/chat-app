@@ -4,12 +4,11 @@ import AddNewContactDialog from "./AddNewContactDialog";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SideBarTab from "./SideBarTab";
-import { Outlet, Route, Routes } from "react-router-dom";
 import { useMediaQuery } from "@react-hook/media-query";
-import Chat from "../Chat/Chat";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
-import NoRouteMatch from "../../Reusable/NoRouteMatch";
+
+export type TabType = "chatroom" | "contact"
 
 const SideBar = () => {
   // Global states in Redux
@@ -20,6 +19,7 @@ const SideBar = () => {
   const isTablet = useMediaQuery("(min-width: 768px)");
   const [showAddChatroom, setShowAddChatroom] = useState(false);
   const [showAddContact, setShowAddContact] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<TabType>("chatroom");
   const newestChatroom = chatrooms.reduce((prevChatroom, currentChatroom) => {
     const prevTimestamp = new Date(
       prevChatroom.lastMessage?.created_at || 0
@@ -37,68 +37,36 @@ const SideBar = () => {
     }
 
     dispatch(setSelectedChatroom(null));
-  }, [isTablet]);
+  }, [isTablet])
 
-  const ResponsiveHomePage = () => {
-    return isTablet ? (
-      <Chat />
-    ) : (
-      <ChatroomsTab onClick={() => setShowAddChatroom(!showAddChatroom)} />
-    );
+  const handleTabOnClick = (tab: TabType) => {
+    setSelectedTab(tab);
   };
 
   return (
     <div className="relative flex-grow ">
-      <Routes>
-        {isTablet ? (
-          <Route
-            path="*"
-            element={
-              <ChatroomsTab
-                onClick={() => setShowAddChatroom(!showAddChatroom)}
-              />
-            }
-          ></Route>
-        ) : (
-          <Route
-            path="/"
-            index
-            element={
-              <ChatroomsTab
-                onClick={() => setShowAddChatroom(!showAddChatroom)}
-              />
-            }
-          />
-        )}
-
-        <Route
-          path="/"
-          element={
-            <ChatroomsTab
-              onClick={() => setShowAddChatroom(!showAddChatroom)}
-            />
-          }
-        ></Route>
-
-        <Route
-          path="contacts"
-          element={
-            <ContactsTab onClick={() => setShowAddContact(!showAddContact)} />
-          }
-        ></Route>
-      </Routes>
+      {selectedTab === "chatroom" && (
+        <ChatroomsTab onClick={() => setShowAddChatroom(!showAddChatroom)} />
+      )}
 
       <AddNewChatroomDialog
         isAddChatroomOpen={showAddChatroom}
         closeAdd={() => setShowAddChatroom(!showAddChatroom)}
       />
 
+      {selectedTab === "contact" && (
+        <ContactsTab onClick={() => setShowAddContact(!showAddContact)} />
+      )}
+
       <AddNewContactDialog
         isAddContactOpen={showAddContact}
         closeAdd={() => setShowAddContact(!showAddContact)}
       />
 
-      <SideBarTab />
+      <SideBarTab
+        selectedTab={selectedTab}
+        handleTabOnClick={handleTabOnClick}
+      />
     </div>
   );
 };

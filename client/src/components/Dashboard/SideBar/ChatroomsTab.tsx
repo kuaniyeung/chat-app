@@ -93,9 +93,6 @@ const ChatroomsTab: React.FC<Props> = ({ onClick }) => {
           return (
             <div
               key={chatroom.id}
-              // className={`block cursor-pointer my-5 mx-4 px-2 flex items-center border-l-4 border-transparent ${
-              //   chatroom.alerted ? `!border-l-accent` : ``
-              // }}`}
               className={`block cursor-pointer my-5 mx-4 px-2 flex items-center border-l-4 border-transparent ${
                 isAlerted.includes(chatroom.id) ? "border-l-accent" : ""
               }`}

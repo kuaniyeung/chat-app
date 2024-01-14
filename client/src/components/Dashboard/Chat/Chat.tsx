@@ -35,9 +35,7 @@ const Chat = () => {
   );
 
   const fetchMessages = async () => {
-    console.log(selectedChatroom);
     if (selectedChatroomIdFromParams) {
-      console.log("trying id from params");
       try {
         await dispatch(
           getMessagesByChatroom({ chatroom_id: selectedChatroomIdFromParams })
@@ -50,7 +48,6 @@ const Chat = () => {
         );
       }
     } else if (selectedChatroom?.id) {
-      console.log("trying id from redux ");
       try {
         await dispatch(
           getMessagesByChatroom({ chatroom_id: selectedChatroom?.id })
@@ -74,6 +71,7 @@ const Chat = () => {
 
     return selectedChatroom?.name;
   };
+
   useEffect(() => {
     setInitialFetch(true);
     fetchMessages();

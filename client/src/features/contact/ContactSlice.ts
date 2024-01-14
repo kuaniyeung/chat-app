@@ -8,6 +8,7 @@ export interface Contact {
 }
 
 interface InitialState {
+  selectedContact: Contact | null;
   loading: boolean;
   contacts: Contact[];
   error: string;
@@ -18,6 +19,7 @@ interface AddNewContactPayload {
 }
 
 const initialState: InitialState = {
+  selectedContact: null,
   loading: false,
   contacts: [],
   error: "",
@@ -130,6 +132,9 @@ export const contactSlice = createSlice({
     setNewContact: (state, action) => {
       state.contacts = [...state.contacts, action.payload];
     },
+    setSelectedContact: (state, action) => {
+      state.selectedContact = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getContacts.pending, (state) => {
@@ -166,4 +171,4 @@ export const contactSlice = createSlice({
 });
 
 export default contactSlice.reducer;
-export const { setNewContact } = contactSlice.actions;
+export const { setNewContact, setSelectedContact } = contactSlice.actions;

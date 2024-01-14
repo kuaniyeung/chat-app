@@ -18,21 +18,24 @@ import { signOutUser } from "../../features/user/userSlice";
 import ConfirmationDialog from "../Reusable/ConfirmationDialog";
 import AlertList from "./AlertList";
 import SideBar from "./SideBar/SideBar";
-import { Outlet, Route, Routes } from "react-router-dom";
+import { Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import Chat from "./Chat/Chat";
 import { useMediaQuery } from "@react-hook/media-query";
 import NoRouteMatch from "../Reusable/NoRouteMatch";
 
 const Dashboard = () => {
+const navigate = useNavigate();
+
   // Global states in Redux
   const dispatch = useAppDispatch();
   const displayName = useAppSelector((state) => state.user.user.display_name);
+  const user = useAppSelector((state) => state.user.user);
+  const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
   const selectedChatroom = useAppSelector(
     (state) => state.chatroom.selectedChatroom
   );
-  const user = useAppSelector((state) => state.user.user);
-  const chatrooms = useAppSelector((state) => state.chatroom.chatrooms);
   const contacts = useAppSelector((state) => state.contact.contacts);
+  const selectedContact = useAppSelector(state => state.contact.selectedContact)
   const alerts = useAppSelector((state) => state.alert.alerts);
 
   // Local states & refs & variables
@@ -56,6 +59,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (isTablet && newestChatroom) {
       dispatch(setSelectedChatroom(newestChatroom));
+      navigate(`/chatrooms/${newestChatroom.id}`);
     }
 
     return () => {
@@ -207,7 +211,7 @@ const Dashboard = () => {
     <div className="md:flex">
       <div
         className={`md:w-2/5 h-screen flex flex-col ${
-          selectedChatroom ? "fixed left-full md:static" : ""
+          selectedChatroom || selectedContact ? "fixed left-full md:static" : ""
         }`}
       >
         <div className="flex justify-between bg-accent items-center">
@@ -250,10 +254,7 @@ const Dashboard = () => {
         <AlertList />
       </div>
 
-      <Routes>
-        {isTablet ? <Route path="/" index element={<Chat />} /> : null}
-        <Route path="chatrooms/:chatroomId" element={<Chat />} />
-      </Routes>
+      <Outlet />
     </div>
   );
 };
