@@ -105,7 +105,7 @@ const ContactInfo = () => {
     return;
   };
   return (
-    <div className="h-screen  max-h-full h-full justify-between md:w-3/5 md:border-l-2 md:border-l-accent">
+    <div className="h-screen max-h-full h-full justify-between md:w-3/5 lg:w-[70%] md:border-l-2 md:border-l-accent">
       {initialFetch ? (
         <div className="fixed h-full w-full flex justify-center items-center">
           <LoadingSpinner size={"lg"} colour={"neutral-content"} />

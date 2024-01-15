@@ -81,7 +81,7 @@ const Chat = () => {
   }, [chatroomId, selectedChatroom]);
 
   return (
-    <div className="h-screen flex flex-col max-h-full h-full justify-between md:w-3/5 md:border-l-2 md:border-l-accent">
+    <div className="h-screen flex flex-col max-h-full h-full justify-between md:w-3/5 lg:w-[70%] md:border-l-2 md:border-l-accent">
       <div className="flex flex-none justify-between px-2 bg-base-200 border-b-2 border-b-base-300 drop-shadow-sm">
         {/* Chatroom name */}
         <h1 className="self-center p-3 text-lg text-neutral">

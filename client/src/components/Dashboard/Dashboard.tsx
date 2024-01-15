@@ -210,7 +210,7 @@ const navigate = useNavigate();
   return (
     <div className="md:flex">
       <div
-        className={`md:w-2/5 h-screen flex flex-col ${
+        className={`md:w-2/5 lg:w-[30%] h-screen flex flex-col ${
           selectedChatroom || selectedContact ? "fixed left-full md:static" : ""
         }`}
       >
