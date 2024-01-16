@@ -1,6 +1,8 @@
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMediaQuery } from "@react-hook/media-query";
 import { useEffect, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import { socket } from "../../SocketClient";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setNewAlert } from "../../features/alert/alertSlice";
@@ -18,10 +20,6 @@ import { signOutUser } from "../../features/user/userSlice";
 import ConfirmationDialog from "../Reusable/ConfirmationDialog";
 import AlertList from "./AlertList";
 import SideBar from "./SideBar/SideBar";
-import { Outlet, Route, Routes, useNavigate } from "react-router-dom";
-import Chat from "./Chat/Chat";
-import { useMediaQuery } from "@react-hook/media-query";
-import NoRouteMatch from "../Reusable/NoRouteMatch";
 
 const Dashboard = () => {
 const navigate = useNavigate();
@@ -152,7 +150,6 @@ const navigate = useNavigate();
       sender_id: string;
       sender_display_name: string;
     }) => {
-      console.log("added contact");
       if (user.display_name !== data.contact_display_name) return;
 
       dispatch(

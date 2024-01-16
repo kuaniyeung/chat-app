@@ -4,8 +4,8 @@ import { MouseEvent } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setSelectedContact } from "../../../features/contact/contactSlice";
 
-import { useNavigate } from "react-router-dom";
 import { useMediaQuery } from "@react-hook/media-query";
+import { useNavigate } from "react-router-dom";
 interface Props {
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }

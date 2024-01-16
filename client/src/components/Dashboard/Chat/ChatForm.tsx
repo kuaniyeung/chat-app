@@ -5,16 +5,16 @@ import { useEffect, useRef, useState } from "react";
 import { socket } from "../../../SocketClient";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import {
+  setAlerted,
+  setLastMessage,
+} from "../../../features/chatroom/chatroomSlice";
+import {
   Message,
   addNewMessage,
   setNewMessage,
 } from "../../../features/message/messageSlice";
 import LoadingSpinner from "../../Reusable/LoadingSpinner";
 import WarningDialog from "../../Reusable/WarningDialog";
-import {
-  setAlerted,
-  setLastMessage,
-} from "../../../features/chatroom/chatroomSlice";
 
 const ChatForm = () => {
   // Global states in Redux

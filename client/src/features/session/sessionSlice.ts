@@ -1,8 +1,8 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { Session } from "@supabase/supabase-js";
-import { createUser, signInUser, signOutUser } from "../user/userSlice";
 import { supabase } from "../../SupabasePlugin";
+import { createUser, signInUser, signOutUser } from "../user/userSlice";
 
 interface InitialState {
   loading: boolean;

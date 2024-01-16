@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { socket } from "../../../SocketClient";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import {
   Chatroom,
   addNewChatroom,
   setSelectedChatroom,
 } from "../../../features/chatroom/chatroomSlice";
-import WarningDialog from "../../Reusable/WarningDialog";
-import LoadingSpinner from "../../Reusable/LoadingSpinner";
 import { Contact } from "../../../features/contact/contactSlice";
-import { socket } from "../../../SocketClient";
+import LoadingSpinner from "../../Reusable/LoadingSpinner";
+import WarningDialog from "../../Reusable/WarningDialog";
 
 interface Props {
   isAddChatroomOpen: boolean;

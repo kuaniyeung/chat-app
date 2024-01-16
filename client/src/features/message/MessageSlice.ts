@@ -1,6 +1,6 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "../../app/store";
 import { supabase } from "../../SupabasePlugin";
+import { RootState } from "../../app/store";
 
 export interface Message {
   id: number | null;

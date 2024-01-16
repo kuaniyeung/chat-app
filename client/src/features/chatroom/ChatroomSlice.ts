@@ -279,7 +279,6 @@ export const chatroomSlice = createSlice({
         };
       }
 
-      // console.log(state.chatrooms[chatroomIndex]);
     },
     setLastMessage: (state, action) => {
       const { chatroom_id, sender_display_name, content, created_at } =

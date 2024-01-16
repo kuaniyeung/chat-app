@@ -1,14 +1,14 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMediaQuery } from "@react-hook/media-query";
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
 import { getMessagesByChatroom } from "../../../features/message/messageSlice";
 import LoadingSpinner from "../../Reusable/LoadingSpinner";
 import ChatForm from "./ChatForm";
 import Messages from "./Messages";
-import { useNavigate, useParams } from "react-router-dom";
-import { useMediaQuery } from "@react-hook/media-query";
 
 const Chat = () => {
   const navigate = useNavigate();

@@ -1,18 +1,15 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
+import Chat from "./components/Dashboard/Chat/Chat";
 import Dashboard from "./components/Dashboard/Dashboard";
+import ContactInfo from "./components/Dashboard/SideBar/ContactInfo";
 import NoRouteMatch from "./components/Reusable/NoRouteMatch";
 import CreateNewUser from "./components/SignInPage/CreateNewUser";
 import Login from "./components/SignInPage/Login";
 import RequireAuth from "./components/SignInPage/RequireAuth";
 import SignInPage from "./components/SignInPage/SignInPage";
-import Chat from "./components/Dashboard/Chat/Chat";
-import ContactInfo from "./components/Dashboard/SideBar/ContactInfo";
 
 function App() {
-  // console.info(
-  //   "Change Enable Email's Confirm Email settings back to enabled when project is finalized"
-  // );
 
   return (
     <Routes>

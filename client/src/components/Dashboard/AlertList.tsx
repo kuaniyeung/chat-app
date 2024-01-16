@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { removeAlert } from "../../features/alert/alertSlice";
 import {
@@ -10,7 +11,6 @@ import {
 } from "../../features/contact/contactSlice";
 import { setNewMessage } from "../../features/message/messageSlice";
 import Alert from "../Reusable/Alert";
-import { useNavigate } from "react-router-dom";
 
 const AlertList = () => {
   const navigate = useNavigate();

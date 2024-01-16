@@ -1,12 +1,12 @@
+import { useMediaQuery } from "@react-hook/media-query";
 import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
 import AddNewChatroomDialog from "./AddNewChatroomDialog";
 import AddNewContactDialog from "./AddNewContactDialog";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SideBarTab from "./SideBarTab";
-import { useMediaQuery } from "@react-hook/media-query";
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { setSelectedChatroom } from "../../../features/chatroom/chatroomSlice";
 
 export type TabType = "chatroom" | "contact"
 
