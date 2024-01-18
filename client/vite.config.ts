@@ -6,7 +6,9 @@ const env = loadEnv("", process.cwd());
 
 export default defineConfig({
   server: {
-    port: 5002,
+    host: true,
+    strictPort: true,
+    port: 8080,
   },
   preview: {
     port: 5173,
