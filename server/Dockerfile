@@ -1,49 +1,49 @@
-# base node image
-FROM node:16-bullseye-slim as base
+# syntax = docker/dockerfile:1
 
-# Install all node_modules, including dev dependencies
-FROM base as deps
+# Adjust NODE_VERSION as desired
+ARG NODE_VERSION=18.14.2
+FROM node:${NODE_VERSION}-slim as base
 
-RUN mkdir /app
+LABEL fly_launch_runtime="Node.js"
+
+# Node.js app lives here
 WORKDIR /app
 
-ADD package.json package-lock.json ./
-RUN npm install --production=false
+# Set production environment
+ENV NODE_ENV="production"
 
-# Setup production node_modules
-FROM base as production-deps
 
-RUN mkdir /app
-WORKDIR /app
-
-COPY --from=deps /app/node_modules /app/node_modules
-ADD package.json package-lock.json ./
-RUN npm prune --production
-
-# Build the app
+# Throw-away build stage to reduce size of final image
 FROM base as build
 
-ENV NODE_ENV=production
+# Install packages needed to build node modules
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
 
-RUN mkdir /app
-WORKDIR /app
+# Install node modules
+COPY --link package-lock.json package.json ./
+RUN npm ci --include=dev
 
-COPY --from=deps /app/node_modules /app/node_modules
+# Copy application code
+COPY --link . .
 
-ADD . .
-RUN npm run build
+# Build application
+RUN --mount=type=secret,id=PORT \
+    --mount=type=secret,id=CLIENT_ORIGIN \
+    PORT="$(cat /run/secrets/PORT)" \
+    CLIENT_ORIGIN="$(cat /run/secrets/CLIENT_ORIGIN)" \
+    npm run build
 
-# Finally, build the production image with minimal footprint
+# Remove development dependencies
+RUN npm prune --omit=dev
+
+
+# Final stage for app image
 FROM base
 
-ENV NODE_ENV production
+# Copy built application
+COPY --from=build /app /app
 
-RUN mkdir /app
-WORKDIR /app
-
-COPY --from=production-deps /app/node_modules /app/node_modules
-
-COPY --from=build /app/dist ./dist
-ADD . .
-
-CMD ["node", "dist/server.js"]
+# Start the server by default, this can be overwritten at runtime
+EXPOSE 3000
+CMD [ "npm", "run", "start" ]
