@@ -36,7 +36,6 @@ RUN --mount=type=secret,id=VITE_SUPABASE_URL \
     VITE_SERVER_ORIGIN="$(cat /run/secrets/VITE_SERVER_ORIGIN)" \
     npm run build
 
-
 # Remove development dependencies
 RUN npm prune --omit=dev
 

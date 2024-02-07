@@ -10,10 +10,6 @@ import RequireAuth from "./components/SignInPage/RequireAuth";
 import SignInPage from "./components/SignInPage/SignInPage";
 
 function App() {
-
-  console.log(import.meta.env.VITE_SUPABASE_URL);
-  console.log(import.meta.env.VITE_SUPABASE_KEY);
-
   return (
     <Routes>
       <Route
