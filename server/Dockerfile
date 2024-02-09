@@ -28,9 +28,7 @@ RUN npm ci --include=dev
 COPY --link . .
 
 # Build application
-RUN --mount=type=secret,id=PORT \
-    --mount=type=secret,id=CLIENT_ORIGIN \
-    PORT="$(cat /run/secrets/PORT)" \
+RUN --mount=type=secret,id=CLIENT_ORIGIN \
     CLIENT_ORIGIN="$(cat /run/secrets/CLIENT_ORIGIN)" \
     npm run build
 

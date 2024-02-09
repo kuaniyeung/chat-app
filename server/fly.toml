@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for chatappwithsocketio-server on 2024-02-07T19:04:31-05:00
+# fly.toml app configuration file generated for chatappwithsocketio-server on 2024-02-09T14:45:37-05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -7,7 +7,6 @@ app = 'chatappwithsocketio-server'
 primary_region = 'yul'
 
 [build]
-  ignorefile = "/path/.dockerignore"
 
 [http_service]
   internal_port = 3000
@@ -21,3 +20,8 @@ primary_region = 'yul'
   cpu_kind = 'shared'
   cpus = 1
   memory_mb = 1024
+
+[services.ports.http_options.response.headers]
+  Access-Control-Allow-Origin = "*"
+  Access-Control-Allow-Methods = "*"
+  Access-Control-Allow-Headers = "*"
