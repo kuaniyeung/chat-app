@@ -28,6 +28,13 @@ export interface ClientToServerEvents {
 }
 
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-  import.meta.env.VITE_SERVER_ORIGIN
+  import.meta.env.VITE_SERVER_ORIGIN,
 );
 
+socket.on(
+  "connect_error",
+  (err: Error & { description?: string; context?: string }) => {
+    // the reason of the error, for example "xhr poll error"
+    console.log(err.message);
+  }
+);

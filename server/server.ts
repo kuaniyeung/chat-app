@@ -6,11 +6,7 @@ import "dotenv/config";
 import { ClientToServerEvents, ServerToClientEvents } from "./interfaces";
 
 const app: Express = express();
-app.use(
-  cors({
-    origin: process.env.CLIENT_ORIGIN,
-  })
-);
+app.use(cors());
 const server = createServer(app);
 const port = 3000;
 const hostname = "0.0.0.0";
@@ -29,9 +25,16 @@ server.listen(port, hostname, (err?: Error) => {
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: {
-    origin: process.env.CLIENT_ORIGIN,
+    origin: "*",
     methods: ["GET", "POST"],
   },
+});
+
+io.engine.on("connection_error", (err) => {
+  console.log(err.req); // the request object
+  console.log(err.code); // the error code, for example 1
+  console.log(err.message); // the error message, for example "Session ID unknown"
+  console.log(err.context); // some additional error context
 });
 
 io.on("connection", (socket) => {
@@ -48,6 +51,8 @@ io.on("connection", (socket) => {
   // Send & receive messages
   socket.on("send_message", (data) => {
     socket.to(data.chatroom_id.toString()).emit("receive_message", data);
+
+    console.log(data);
 
     socket.broadcast.emit("global_new_message", data);
   });

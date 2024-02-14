@@ -5,10 +5,13 @@ import { loadEnv } from "vite";
 const env = loadEnv("", process.cwd());
 
 export default defineConfig({
+  // server: {
+  //   host: true,
+  //   strictPort: true,
+  //   port: 8080,
+  // },
   server: {
-    host: true,
-    strictPort: true,
-    port: 8080,
+    port: 5002,
   },
   preview: {
     port: 5173,
