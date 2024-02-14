@@ -28,9 +28,7 @@ RUN npm ci --include=dev
 COPY --link . .
 
 # Build application
-RUN --mount=type=secret,id=CLIENT_ORIGIN \
-    CLIENT_ORIGIN="$(cat /run/secrets/CLIENT_ORIGIN)" \
-    npm run build
+RUN npm run build
 
 # Remove development dependencies
 RUN npm prune --omit=dev

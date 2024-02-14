@@ -39,13 +39,20 @@ RUN --mount=type=secret,id=VITE_SUPABASE_URL \
 # Remove development dependencies
 RUN npm prune --omit=dev
 
+# Use nginx image for serving the built app
+FROM nginx:alpine
 
-# Final stage for app image
-FROM nginx
-
-# Copy built application
+# Copy built application from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Start the server by default, this can be overwritten at runtime
+# Remove default nginx configuration
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy custom nginx configuration
+COPY nginx/nginx.conf /etc/nginx/conf.d/app.conf
+
+# Expose port 80
 EXPOSE 80
-CMD [ "/usr/sbin/nginx", "-g", "daemon off;" ]
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
