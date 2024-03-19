@@ -3,7 +3,6 @@
 Welcome to our RealTime Chat App! This app utilizes React, Redux, Supabase, Socket.IO, TypeScript, Vite, TailwindCSS, DaisyUI, React Router, and Fly.io to create a seamless chatting experience with real-time updates.
 
 ## Features
-
 - **Real-Time Updates**: Experience real-time updates such as typing notifications, new friend requests, and new chat notifications.
 - **Supabase Authentication**: Utilizes Supabase Authentication for user creation and login, ensuring a secure authentication process.
 - **Redux**: Manages application state efficiently with Redux, ensuring a smooth and consistent user experience.
@@ -11,7 +10,6 @@ Welcome to our RealTime Chat App! This app utilizes React, Redux, Supabase, Sock
 - **Responsive Design**: Enjoy a responsive design that adapts to different screen sizes for a seamless experience across devices.
 
 ## Technologies Used
-
 - **React**: A JavaScript library for building user interfaces.
 - **Redux**: A predictable state container for JavaScript apps.
 - **Supabase**: An open-source alternative to Firebase, providing a suite of services like authentication and real-time database.
