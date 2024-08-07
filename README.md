@@ -11,8 +11,8 @@ Welcome to our RealTime Chat App! This app utilizes React, Redux, Supabase, Sock
 
 ## Technologies Used
 - **React**: A JavaScript library for building user interfaces.
-- **Redux**: A predictable state container for JavaScript apps.
-- **Supabase**: An open-source alternative to Firebase, providing a suite of services like authentication and real-time database.
+- **Redux**: An open-source JavaScript library for managing and centralizing application state.
+- **Supabase**: An open-source database infrastructure built on PostgreSQL, providing a suite of services like authentication and real-time database.
 - **Socket.IO**: A library that enables real-time, bidirectional, and event-based communication.
 - **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript.
 - **Vite**: A build tool that aims to provide a faster and leaner development experience.
