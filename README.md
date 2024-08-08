@@ -1,4 +1,4 @@
-# RealTime Chat App
+# Real-Time Chat App
 
 Welcome to our RealTime Chat App! This app utilizes React, Redux, Supabase, Socket.IO, TypeScript, Vite, TailwindCSS, DaisyUI, React Router, and Fly.io to create a seamless chatting experience with real-time updates.
 
@@ -22,4 +22,4 @@ Welcome to our RealTime Chat App! This app utilizes React, Redux, Supabase, Sock
 - **Fly.io**: A platform for deploying and scaling applications globally.
 
 - ## Demo
-Explore the [RealTime Chat App](https://chatappwithsocketio.fly.dev/) in action.
+Explore the [Real-Time Chat App](https://chatappwithsocketio.fly.dev/) in action.
